@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:background="@color/colorPrimary"
+        android:paddingTop="6sp"
+        android:paddingBottom="6sp">
+        <TextView
+            android:id="@+id/text_dev_connect"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/colorTextSelected"
+            android:textAlignment="textStart"/>
+        <TextView
+            android:id="@+id/text_dev_state"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:textColor="@color/colorTextSelected"
+            android:textAlignment="textEnd"/>
+    </LinearLayout>
+
+
+    <android.support.design.widget.TabLayout
+        android:id="@+id/test_tab"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:tabSelectedTextColor="@color/colorTextSelected"
+        app:tabTextColor="@color/colorTextUnselected"
+        app:tabTextAppearance="@style/TabLayoutTextAppearance"
+        android:background="@color/colorPrimary"
+        app:tabIndicatorHeight="4dp">
+    </android.support.design.widget.TabLayout>
+
+    <android.support.v4.view.ViewPager
+        android:id="@+id/test_container"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"/>
+
+    <EditText
+        android:id="@+id/edit_result"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="3"
+        android:ems="10"
+        android:inputType="textMultiLine"
+        android:background="@drawable/list_boader"
+        android:gravity="top"
+        android:focusable="false"/>
+
+
+</LinearLayout>

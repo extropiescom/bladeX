@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TableLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent" android:layout_height="wrap_content">
+    <TableRow  android:gravity="center">
+        <Button
+            android:id="@+id/btn_getdevinfo"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:text="@string/btn_getdevinfo"
+            android:textAllCaps="false" />
+        <Button
+            android:id="@+id/btn_initpin"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:text="@string/btn_initpin"
+            android:textAllCaps="false" />
+        <Button
+            android:id="@+id/btn_verifypin"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:text="@string/btn_verifypin"
+            android:textAllCaps="false" />
+
+    </TableRow>
+    <TableRow android:gravity="center">
+        <Button
+            android:id="@+id/btn_changepin"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:text="@string/btn_changepin"
+            android:textAllCaps="false" />
+        <Button
+            android:id="@+id/btn_format"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:text="@string/btn_format"
+            android:textAllCaps="false" />
+        <Button
+            android:id="@+id/btn_clear_screen"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:text="@string/btn_clear_screen"
+            android:textAllCaps="false" />
+    </TableRow>
+    <TableRow android:gravity="center">
+        <Button
+            android:id="@+id/btn_freeContext"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:text="@string/btn_freeContext"
+            android:textAllCaps="false" />
+        <Button
+            android:id="@+id/btn_freeContextAndShutDown"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:text="@string/btn_freeContextAndShutDown"
+            android:textAllCaps="false" />
+    </TableRow>
+</TableLayout>

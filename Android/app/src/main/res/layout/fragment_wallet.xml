@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TableLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent" android:layout_height="wrap_content">
+    <TableRow android:gravity="center">
+        <Button
+            android:id="@+id/btn_getaddress"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:text="@string/btn_getaddress"
+            android:textAllCaps="false" />
+    </TableRow>
+    <TableRow android:gravity="center">
+        <Button
+            android:id="@+id/btn_ethsign"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:text="@string/btn_ethsign"
+            android:textAllCaps="false" />
+        <Button
+            android:id="@+id/btn_eossign"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:text="@string/btn_eossign"
+            android:textAllCaps="false" />
+        <Button
+            android:id="@+id/btn_cybsign"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:text="@string/btn_cybsign"
+            android:textAllCaps="false" />
+    </TableRow>
+    <TableRow>
+        <Button
+            android:id="@+id/btn_abort"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:text="@string/btn_abort"
+            android:textAllCaps="false" />
+    </TableRow>
+</TableLayout>

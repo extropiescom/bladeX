@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TableLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent" android:layout_height="wrap_content">
+    <TableRow android:gravity="center">
+        <Button
+            android:id="@+id/btn_getfplist"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:text="@string/btn_getfplist"
+            android:textAllCaps="false" />
+        <Button
+            android:id="@+id/btn_enrollfp"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:text="@string/btn_enrollfp"
+            android:textAllCaps="false" />
+        <Button
+            android:id="@+id/btn_verifyfp"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:text="@string/btn_verifyfp"
+            android:textAllCaps="false" />
+    </TableRow>
+    <TableRow android:gravity="center">
+
+        <Button
+            android:id="@+id/btn_deletefp"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:text="@string/btn_deletefp"
+            android:textAllCaps="false" />
+        <Button
+            android:id="@+id/btn_calibrate"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:text="@string/btn_calibrate"
+            android:textAllCaps="false" />
+        <Button
+            android:id="@+id/btn_abort"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:text="@string/btn_abort"
+            android:textAllCaps="false" />
+    </TableRow>
+</TableLayout>
