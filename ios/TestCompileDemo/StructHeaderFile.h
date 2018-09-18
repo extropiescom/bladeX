@@ -63,14 +63,4 @@ typedef struct _connectContext
     tFunc_DisconnectedCallback disconnectedCallback;//disconnectd call back, will be called when device is disconnected.
 } ConnectContext, *pConnectContext;
 
-
-typedef struct _additionalContext
-{
-    int timeout;
-    char searchName[100];
-    tFunc_EnumCallback enumCallBack;
-    tFunc_BatteryCallback batteryCallBack;
-    tFunc_DisconnectedCallback disconnectedCallback;
-} AdditionalContext, *pAdditionalCtx;
-
 #endif /* StructHeaderFile_h */
