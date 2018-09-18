@@ -1,0 +1,19 @@
+//
+//  Compile_EWallet.pch
+//  TestCompileDemo
+//
+//  Created by extropies on 2018/8/13.
+//  Copyright © 2018年 extropies. All rights reserved.
+//
+
+#ifndef Compile_EWallet_pch
+#define Compile_EWallet_pch
+
+// Include any system framework and library headers here that should be included in all compilation units.
+// You will also need to set the Prefix Header build setting of one or more of your targets to reference this file.
+#import "StructHeaderFile.h" // ⚠️ 此头文件定义了两个结构体，是蓝牙逻辑要用到的。
+
+#import "Masonry.h"
+#import "LCProgressHUD.h"
+
+#endif /* Compile_EWallet_pch */
