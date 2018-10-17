@@ -16,5 +16,74 @@
             android:layout_height="wrap_content"
             android:text="@string/btn_importmne"
             android:textAllCaps="false" />
+        <Button
+            android:id="@+id/btn_import_image"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:text="@string/btn_import_image"
+            android:textAllCaps="false" />
+    </TableRow>
+    <TableRow android:gravity="center">
+        <Button
+            android:id="@+id/btn_clear_image"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:text="@string/btn_clear_image"
+            android:textAllCaps="false" />
+        <Button
+            android:id="@+id/btn_show_image"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:text="@string/btn_show_image"
+            android:textAllCaps="false" />
+        <Button
+            android:id="@+id/btn_show_image0"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:text="@string/btn_show_image0"
+            android:textAllCaps="false" />
+    </TableRow>
+    <TableRow android:gravity="center">
+        <Button
+            android:id="@+id/btn_set_logo"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:text="@string/btn_set_logo"
+            android:textAllCaps="false" />
+        <Button
+            android:id="@+id/btn_restore_logo"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:text="@string/btn_restore_logo"
+            android:textAllCaps="false" />
+    </TableRow>
+    <TableRow android:gravity="center">
+        <Button
+            android:id="@+id/btn_set_image_name"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:text="@string/btn_set_image_name"
+            android:textAllCaps="false" />
+        <Button
+            android:id="@+id/btn_get_image_name"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:text="@string/btn_get_image_name"
+            android:textAllCaps="false" />
+        <Button
+            android:id="@+id/btn_get_image_count"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:text="@string/btn_get_image_count"
+            android:textAllCaps="false" />
     </TableRow>
 </TableLayout>

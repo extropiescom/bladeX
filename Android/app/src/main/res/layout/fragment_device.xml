@@ -50,6 +50,22 @@
     </TableRow>
     <TableRow android:gravity="center">
         <Button
+            android:id="@+id/btn_clearCOS"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:text="@string/btn_clearCOS"
+            android:textAllCaps="false" />
+        <Button
+            android:id="@+id/btn_writeSN"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:text="@string/btn_writeSN"
+            android:textAllCaps="false" />
+    </TableRow>
+    <TableRow android:gravity="center">
+        <Button
             android:id="@+id/btn_freeContext"
             android:layout_width="0dp"
             android:layout_weight="1"

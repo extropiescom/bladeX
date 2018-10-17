@@ -9,8 +9,6 @@
             android:layout_height="wrap_content"
             android:text="@string/btn_getaddress"
             android:textAllCaps="false" />
-    </TableRow>
-    <TableRow android:gravity="center">
         <Button
             android:id="@+id/btn_ethsign"
             android:layout_width="0dp"
@@ -25,6 +23,8 @@
             android:layout_height="wrap_content"
             android:text="@string/btn_eossign"
             android:textAllCaps="false" />
+    </TableRow>
+    <TableRow android:gravity="center">
         <Button
             android:id="@+id/btn_cybsign"
             android:layout_width="0dp"
@@ -32,14 +32,42 @@
             android:layout_height="wrap_content"
             android:text="@string/btn_cybsign"
             android:textAllCaps="false" />
-    </TableRow>
-    <TableRow>
+        <Button
+            android:id="@+id/btn_get_checkcode"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:text="@string/btn_get_checkcode"
+            android:textAllCaps="false" />
         <Button
             android:id="@+id/btn_abort"
             android:layout_width="0dp"
             android:layout_weight="1"
             android:layout_height="wrap_content"
             android:text="@string/btn_abort"
+            android:textAllCaps="false" />
+    </TableRow>
+    <TableRow>
+        <Button
+            android:id="@+id/btn_mne2seed"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:text="@string/btn_mne2seed"
+            android:textAllCaps="false" />
+        <Button
+            android:id="@+id/btn_seed2addr"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:text="@string/btn_seed2addr"
+            android:textAllCaps="false" />
+        <Button
+            android:id="@+id/btn_eos_serialize"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:text="@string/btn_eos_serialize"
             android:textAllCaps="false" />
     </TableRow>
 </TableLayout>

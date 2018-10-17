@@ -38,6 +38,10 @@
     <string name="btn_clear_screen">ClearScreen</string>
     <string name="btn_calibrate">CalibrateFP</string>
     <string name="btn_abort">Abort</string>
+    <string name="btn_get_checkcode">GetCheckCode</string>
+    <string name="btn_clearCOS">ClearCOS</string>
+    <string name="btn_writeSN">WriteSN</string>
+    <string name="edit_sn">Please input Serial Number</string>
     <string name="test_hid_btn">TestHid</string>
     <string name="btn_start_scan">Scan Device</string>
     <string name="edit_pin">Please input new PIN</string>
@@ -48,4 +52,19 @@
     <string name="tab_item_wallet">Wallet</string>
     <string name="text_dev_state">PowerSource:Unknown, PowerLevel:Unknown</string>
     <string name="text_dev_state_format">PowerSource:%s, PowerLevel:%s</string>
+    <string name="btn_mne2seed">RecoverSeed</string>
+    <string name="btn_seed2addr">RecoverAddr</string>
+    <string name="edit_mnes">Please input mnemonics</string>
+    <string name="edit_seed">Please input seed</string>
+    <string name="btn_import_image">Import Img</string>
+    <string name="btn_clear_image">Clear Img</string>
+    <string name="btn_show_image">Show Img</string>
+    <string name="btn_show_image0">Show Img0</string>
+    <string name="btn_set_logo">SetLogo</string>
+    <string name="btn_restore_logo">ResetLogo</string>
+    <string name="btn_set_image_name">SetIName</string>
+    <string name="btn_get_image_name">GetIName</string>
+    <string name="btn_get_image_count">GetICount</string>
+    <string name="edit_image_name">Please Input Image Name</string>
+    <string name="btn_eos_serialize">EOS Ser</string>
 </resources>
