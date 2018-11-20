@@ -1,12 +1,16 @@
 package com.extropies.testapp;
 
+import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Handler;
 import android.os.Message;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.Gravity;
@@ -31,6 +35,9 @@ import java.io.FileOutputStream;
 import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
+    public static final int TOOL_TYPE_DEMO = 0;
+    public static final int TOOL_TYPE_PRODUCT_TEST = 1;
+    public static final int TOOL_TYPE_CURRENT = TOOL_TYPE_DEMO/*TOOL_TYPE_PRODUCT_TEST*/;
 
     private Button m_btnEnum;
     private EditText m_editFilter;
@@ -99,8 +106,10 @@ public class MainActivity extends AppCompatActivity {
                         m_devListImage = imgView;
                         m_devListCurrentDevName = strDeviceName;
 
-                        m_editFilter.setText(strDeviceName);
-                        ((MainActivity)m_context).setFilterString(strDeviceName);
+                        if (TOOL_TYPE_CURRENT == TOOL_TYPE_DEMO) {
+                            m_editFilter.setText(strDeviceName);
+                            ((MainActivity)m_context).setFilterString(strDeviceName);
+                        }
 
                         m_testThread = new BlueToothWrapper(m_mainHandler);
                         ((BlueToothWrapper)m_testThread).setInitContextWithDevNameWrapper((Activity) m_context, strDeviceName);
@@ -232,7 +241,7 @@ public class MainActivity extends AppCompatActivity {
                 if ((m_scanThread == null) || (m_scanThread.getState() == Thread.State.TERMINATED))
                 {
                     m_scanThread = new BlueToothWrapper(m_mainHandler);
-                    ((BlueToothWrapper)m_scanThread).setGetDevListWrapper(MainActivity.this, m_editFilter.getText().toString());
+                    ((BlueToothWrapper)m_scanThread).setGetDevListWrapper(/*MainActivity.this*/getApplicationContext(), m_editFilter.getText().toString());
                     m_scanThread.start();
                 }
                 else
@@ -291,10 +300,40 @@ public class MainActivity extends AppCompatActivity {
         return 0;
     }
 
+    //request
+    public static int BLUETOOTH_PERMISSIONS_REQUEST = 0;
+    private static boolean requestPermissions(Activity activity) {
+        if (activity == null) {
+            return false;
+        }
+
+        if (Build.VERSION.SDK_INT >= 23) {
+            //check location permission
+            if (ActivityCompat.checkSelfPermission(activity, Manifest.permission.ACCESS_COARSE_LOCATION) !=  PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(activity, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, BLUETOOTH_PERMISSIONS_REQUEST);
+            }
+        }
+
+        //check blue tooth permission
+        if (ActivityCompat.checkSelfPermission(activity, Manifest.permission.BLUETOOTH) !=  PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(activity, new String[]{Manifest.permission.BLUETOOTH}, BLUETOOTH_PERMISSIONS_REQUEST);
+        }
+
+        //check blue tooth admin permission
+        if (ActivityCompat.checkSelfPermission(activity, Manifest.permission.BLUETOOTH_ADMIN) !=  PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(activity, new String[]{Manifest.permission.BLUETOOTH_ADMIN}, BLUETOOTH_PERMISSIONS_REQUEST);
+        }
+
+        return true;
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        //request permissions
+        requestPermissions(this);
 
         m_mainHandler = new MainHandler();
 
@@ -305,6 +344,12 @@ public class MainActivity extends AppCompatActivity {
         m_devListImage = null;
 
         m_progBar.setVisibility(View.GONE);
+
+        if (MainActivity.TOOL_TYPE_CURRENT == MainActivity.TOOL_TYPE_PRODUCT_TEST) {
+            if (getFilterString() == "") {
+                setFilterString("WOOKONG BIO");
+            }
+        }
         m_editFilter.getText().append(getFilterString());
 
         m_devNameList = new ArrayList<>(0);

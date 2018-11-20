@@ -1,6 +1,7 @@
 package com.extropies.testapp;
 
 import android.app.Activity;
+import android.content.Context;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
@@ -59,6 +60,10 @@ public class BlueToothWrapper extends Thread {
     public static final int SET_LOGO_IMAGE_WRAPPER = 40;
     public static final int GET_IMAGE_COUNT_WRAPPER = 41;
     public static final int EOS_SERIALIZE_WRAPPER = 42;
+    public static final int PRODUCT_TEST_FP_WRAPPER = 43;
+    public static final int PRODUCT_TEST_SCREEN_WRAPPER = 44;
+    public static final int UPDATE_COS_WRAPPER = 45;
+    public static final int GET_FW_VERSION_WRAPPER = 46;
 
     //messages
     public static final int MSG_INIT_START = 0;
@@ -152,6 +157,19 @@ public class BlueToothWrapper extends Thread {
     public static final int MSG_EOS_SERIALIZE_START = 83;
     public static final int MSG_EOS_SERIALIZE_FINISH = 84;
 
+    public static final int MSG_PRODUCT_TEST_FP_START = 85;
+    public static final int MSG_PRODUCT_TEST_FP_UPDATE = 86;
+    public static final int MSG_PRODUCT_TEST_FP_FINISH = 87;
+    public static final int MSG_PRODUCT_TEST_SCREEN_START = 88;
+    public static final int MSG_PRODUCT_TEST_SCREEN_FINISH = 89;
+
+    public static final int MSG_UPDATE_COS_START = 90;
+    public static final int MSG_UPDATE_COS_FINISH = 91;
+    public static final int MSG_UPDATE_COS_UPDATE = 92;
+
+    public static final int MSG_GET_FW_VERSION_START = 93;
+    public static final int MSG_GET_FW_VERSION_FINISH = 94;
+
     private static Map<String, Object> m_listCommLock;
     private Object m_objCommLock;
 
@@ -162,7 +180,7 @@ public class BlueToothWrapper extends Thread {
     private int m_wrapperType;
     private Handler m_mainHandler;
     private static Handler m_heartBeatHandler = null;
-    private Activity m_activity = null; //for INIT_WRAPPER
+    private Context m_activity = null; //for INIT_WRAPPER
     private String m_strFilter = null; //for ENUM_WRAPPER
     private String m_strDevName = null; //for CONNECT_WRAPPER
     private long m_devHandle = 0; // for SEND_CMD_WRAPPER
@@ -185,6 +203,9 @@ public class BlueToothWrapper extends Thread {
     private byte m_showMode;
     private String m_strImageName;
     private String m_strEOSTxString;
+
+    private byte[] m_cosData;
+    private boolean m_bRestart;
 
     private static Lock m_commonLock = null;
     private static boolean m_bAborting;
@@ -405,6 +426,20 @@ public class BlueToothWrapper extends Thread {
         public byte[] getSerializeData() { return m_serializeData; }
     }
 
+    public static class GetFWVersionReturnValue {
+        private int m_returnValue;
+        private MiddlewareInterface.PAEW_FWVersion m_fwVersion;
+        GetFWVersionReturnValue(int returnValue, MiddlewareInterface.PAEW_FWVersion fwVersion) {
+            m_returnValue = returnValue;
+            m_fwVersion = fwVersion;
+        }
+
+        public int getReturnValue() {
+            return m_returnValue;
+        }
+        public MiddlewareInterface.PAEW_FWVersion getFWVersion() { return m_fwVersion; }
+    }
+
     private CommonUtility.enumCallback m_enumCallback = new CommonUtility.enumCallback() {
         @Override
         public void discoverDevice(String[] strDeviceNames) {
@@ -434,6 +469,24 @@ public class BlueToothWrapper extends Thread {
         }
     };
 
+    private CommonUtility.fpStateCallback m_enrollCallback2 = new CommonUtility.fpStateCallback() {
+        @Override
+        public void pushFingerPrintState(int nFPState) {
+            Message msg;
+
+            if (nFPState != MiddlewareInterface.PAEW_RET_DEV_OP_CANCEL) {
+                msg = m_mainHandler.obtainMessage();
+                msg.what = MSG_PRODUCT_TEST_FP_UPDATE;
+                msg.arg1 = nFPState;
+                msg.sendToTarget();
+            }
+
+            if (nFPState == MiddlewareInterface.PAEW_RET_DEV_FP_GOOG_FINGER) {
+                MiddlewareInterface.abortFP(m_contextHandle, m_devIndex);
+            }
+        }
+    };
+
     private CommonUtility.fpStateCallback m_verifyCallback = new CommonUtility.fpStateCallback() {
         @Override
         public void pushFingerPrintState(int nFPState) {
@@ -448,6 +501,25 @@ public class BlueToothWrapper extends Thread {
                 m_commonLock.unlock();
                 while(m_bAborting);
                 m_commonLock.lock();
+            }
+        }
+    };
+
+    private CommonUtility.updateCOSCallback m_updateCOSCallback = new CommonUtility.updateCOSCallback() {
+        @Override
+        public void pushUpdateProgress(int iProgress) {
+            Message msg;
+
+            msg = m_mainHandler.obtainMessage();
+            msg.what = MSG_UPDATE_COS_UPDATE;
+            msg.obj = null;
+            msg.arg2 = iProgress;
+            msg.sendToTarget();
+
+            try {
+                Thread.sleep(20);
+            } catch (Exception e) {
+                e.printStackTrace();
             }
         }
     };
@@ -1117,7 +1189,7 @@ public class BlueToothWrapper extends Thread {
         return true;
     }
 
-    boolean setGetDevListWrapper(Activity activity, String strFilter) {
+    boolean setGetDevListWrapper(Context activity, String strFilter) {
         m_wrapperType = GET_DEV_LIST_WRAPPER;
         if (strFilter == null) {
             m_strFilter = "";
@@ -1256,6 +1328,49 @@ public class BlueToothWrapper extends Thread {
 
         return true;
     }
+
+    public boolean setProductTestFPWrapper(long contextHandle, int devIndex) {
+        m_wrapperType = PRODUCT_TEST_FP_WRAPPER;
+
+        m_contextHandle = contextHandle;
+        m_devIndex = devIndex;
+
+        return true;
+    }
+
+    boolean setProductTestScreenWrapper(long contextHandle, int devIndex, byte imageIndex, byte showMode) {
+        m_wrapperType = PRODUCT_TEST_SCREEN_WRAPPER;
+
+        m_contextHandle = contextHandle;
+        m_devIndex = devIndex;
+
+        m_imageIndex = imageIndex;
+        m_showMode = showMode;
+
+        return true;
+    }
+
+    public boolean setUpdateCOSWrapper(long contextHandle, int devIndex, boolean bRestart, byte[] cosData) {
+        m_wrapperType = UPDATE_COS_WRAPPER;
+
+        m_contextHandle = contextHandle;
+        m_bRestart = bRestart;
+        m_devIndex = devIndex;
+
+        m_cosData = cosData;
+
+        return true;
+    }
+
+    public boolean setGetFWVersionWrapper(long contextHandle, int devIndex) {
+        m_wrapperType = GET_FW_VERSION_WRAPPER;
+
+        m_contextHandle = contextHandle;
+        m_devIndex = devIndex;
+
+        return true;
+    }
+
     //////////////////////////////////////////////////////////////////////////////////
     private int sendCmd() {
         Message msg;
@@ -1354,6 +1469,7 @@ public class BlueToothWrapper extends Thread {
         int[] fpListCount;
         MiddlewareInterface.FingerPrintID[] fpList;
         MiddlewareInterface.PAEW_DevInfo[] devInfo;
+        MiddlewareInterface.PAEW_FWVersion[] fwVersion;
         int devInfoType;
         String[] strMnes;
         int[] checkIndex, checkIndexCount;
@@ -1969,9 +2085,9 @@ public class BlueToothWrapper extends Thread {
                 devCount = new int[1];
                 devCount[0] = MiddlewareInterface.PAEW_MAX_DEV_COUNT;
                 strDeviceNames = new String[MiddlewareInterface.PAEW_MAX_DEV_COUNT];
-                m_commonLock.lock();
-                iRtn = MiddlewareInterface.getDeviceList(m_activity, m_strFilter, 4000, m_enumCallback, strDeviceNames, devCount);
-                m_commonLock.unlock();
+                //m_commonLock.lock();
+                iRtn = MiddlewareInterface.getDeviceList(m_activity, m_strFilter, 20000, m_enumCallback, strDeviceNames, devCount);
+                //m_commonLock.unlock();
 
                 msg = m_mainHandler.obtainMessage();
                 msg.what = MSG_ENUM_FINISH;
@@ -2240,6 +2356,94 @@ public class BlueToothWrapper extends Thread {
                 msg = m_mainHandler.obtainMessage();
                 msg.what = MSG_EOS_SERIALIZE_FINISH;
                 msg.obj = new EOSTxSerializeReturn(iRtn, serializeData);
+                msg.sendToTarget();
+                break;
+            case PRODUCT_TEST_FP_WRAPPER:
+                msg = m_mainHandler.obtainMessage();
+                msg.what = MSG_PRODUCT_TEST_FP_UPDATE;
+                msg.sendToTarget();
+
+                m_commonLock.lock();
+                if (m_contextHandle == 0) {
+                    iRtn = MiddlewareInterface.PAEW_RET_DEV_COMMUNICATE_FAIL;
+                } else {
+                    iRtn = MiddlewareInterface.enrollFP(m_contextHandle, m_devIndex, m_enrollCallback2);
+                }
+                m_commonLock.unlock();
+
+                msg = m_mainHandler.obtainMessage();
+                msg.what = MSG_PRODUCT_TEST_FP_FINISH;
+                msg.arg1 = iRtn;
+                msg.sendToTarget();
+                break;
+            case PRODUCT_TEST_SCREEN_WRAPPER:
+                msg = m_mainHandler.obtainMessage();
+                msg.what = MSG_PRODUCT_TEST_SCREEN_START;
+                msg.sendToTarget();
+
+                m_commonLock.lock();
+                if (m_contextHandle == 0) {
+                    iRtn = MiddlewareInterface.PAEW_RET_DEV_COMMUNICATE_FAIL;
+                } else {
+                    iRtn = MiddlewareInterface.showImage(m_contextHandle, m_devIndex, m_imageIndex, m_showMode);
+                }
+                m_commonLock.unlock();
+
+                msg = m_mainHandler.obtainMessage();
+                msg.what = MSG_PRODUCT_TEST_SCREEN_FINISH;
+                msg.arg1 = iRtn;
+                msg.sendToTarget();
+                break;
+            case UPDATE_COS_WRAPPER:
+                msg = m_mainHandler.obtainMessage();
+                msg.what = MSG_UPDATE_COS_START;
+                msg.sendToTarget();
+
+                m_commonLock.lock();
+                if (m_contextHandle == 0) {
+                    iRtn = MiddlewareInterface.PAEW_RET_DEV_COMMUNICATE_FAIL;
+                } else {
+                    MiddlewareInterface.clearCOS(m_contextHandle, m_devIndex);
+
+                    msg = m_mainHandler.obtainMessage();
+                    msg.what = MSG_UPDATE_COS_UPDATE;
+                    msg.obj = "Clear COS success, device resetting";
+                    msg.arg2 = 0;
+                    msg.sendToTarget();
+
+                    msg = m_mainHandler.obtainMessage();
+                    msg.what = MSG_UPDATE_COS_UPDATE;
+                    msg.obj = "Updating COS, please wait...";
+                    msg.arg2 = 0;
+                    msg.sendToTarget();
+
+                    iRtn = MiddlewareInterface.updateCOS(m_contextHandle, m_devIndex, m_bRestart, m_updateCOSCallback, m_cosData);
+                }
+                m_commonLock.unlock();
+
+                msg = m_mainHandler.obtainMessage();
+                msg.what = MSG_UPDATE_COS_FINISH;
+                msg.arg1 = iRtn;
+                msg.sendToTarget();
+                break;
+            case GET_FW_VERSION_WRAPPER:
+                msg = m_mainHandler.obtainMessage();
+                msg.what = MSG_GET_FW_VERSION_START;
+                msg.sendToTarget();
+
+                fwVersion = new MiddlewareInterface.PAEW_FWVersion[1];
+
+                m_commonLock.lock();
+                if (m_contextHandle == 0) {
+                    iRtn = MiddlewareInterface.PAEW_RET_DEV_COMMUNICATE_FAIL;
+                } else {
+                    iRtn = MiddlewareInterface.getFWVersion(m_contextHandle, m_devIndex, fwVersion);
+                }
+                m_commonLock.unlock();
+
+                msg = m_mainHandler.obtainMessage();
+                msg.what = MSG_GET_FW_VERSION_FINISH;
+                msg.obj = new GetFWVersionReturnValue(iRtn, fwVersion[0]);
                 msg.sendToTarget();
                 break;
         }

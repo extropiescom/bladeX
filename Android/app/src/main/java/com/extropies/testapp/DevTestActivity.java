@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Handler;
 import android.os.Message;
 import android.support.annotation.NonNull;
@@ -24,12 +25,16 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.extropies.common.CommonUtility;
 import com.extropies.common.MiddlewareInterface;
 
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
 import java.util.ArrayList;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -39,11 +44,16 @@ public class DevTestActivity extends AppCompatActivity {
     private static final int TAB_FINGERPRINT = 1;
     private static final int TAB_INIT_WALLET = 2;
     private static final int TAB_WALLET = 3;
+    private static final int TAB_PRODUCT_TEST = 4;
 
     private static ViewPager m_viewPager;
     private ArrayList<Fragment> m_fragList;
 
     private EditText m_editResult;
+
+    private ProgressBar m_progBar;
+
+    public static int COS_FILE_SELECT_CODE = 0;
 
     protected static ReentrantLock m_uiLock;
     protected static int m_coinChoiceIndex = 0;
@@ -52,6 +62,8 @@ public class DevTestActivity extends AppCompatActivity {
     public static byte m_authType;
     public static int m_getPINResult;
     public static String m_getPINString;
+
+    public static boolean m_bUpdateCOSRestart = false;
 
     private static final String m_strDefaultPIN = "12345678";
     private static final String m_strDefaultNewPIN = "88888888";
@@ -221,6 +233,24 @@ public class DevTestActivity extends AppCompatActivity {
                 case BlueToothWrapper.MSG_EOS_SERIALIZE_FINISH:
                     strProcessName = "EOS Transaction Serialize";
                     break;
+                case BlueToothWrapper.MSG_PRODUCT_TEST_FP_START:
+                case BlueToothWrapper.MSG_PRODUCT_TEST_FP_UPDATE:
+                case BlueToothWrapper.MSG_PRODUCT_TEST_FP_FINISH:
+                    strProcessName = "指纹测试";
+                    break;
+                case BlueToothWrapper.MSG_PRODUCT_TEST_SCREEN_START:
+                case BlueToothWrapper.MSG_PRODUCT_TEST_SCREEN_FINISH:
+                    strProcessName = "屏幕测试";
+                    break;
+                case BlueToothWrapper.MSG_UPDATE_COS_START:
+                case BlueToothWrapper.MSG_UPDATE_COS_UPDATE:
+                case BlueToothWrapper.MSG_UPDATE_COS_FINISH:
+                    strProcessName = "Update COS";
+                    break;
+                case BlueToothWrapper.MSG_GET_FW_VERSION_START:
+                case BlueToothWrapper.MSG_GET_FW_VERSION_FINISH:
+                    strProcessName = "Get FW Version";
+                    break;
             }
 
             return strProcessName;
@@ -342,12 +372,23 @@ public class DevTestActivity extends AppCompatActivity {
                 case BlueToothWrapper.MSG_SET_LOGO_IMAGE_START:
                 case BlueToothWrapper.MSG_GET_IMAGE_COUNT_START:
                 case BlueToothWrapper.MSG_EOS_SERIALIZE_START:
+                case BlueToothWrapper.MSG_PRODUCT_TEST_FP_START:
+                case BlueToothWrapper.MSG_PRODUCT_TEST_SCREEN_START:
+                case BlueToothWrapper.MSG_UPDATE_COS_START:
+                case BlueToothWrapper.MSG_GET_FW_VERSION_START:
                     //resEdit.clear();
                     //m_lineIndex = 0;
                     resEdit.append("\n===============================");
                     resEdit.append("\n");
                     resEdit.append("[" + m_lineIndex + "]");
-                    resEdit.append(getProcessName(msg.what) + " Start");
+                    if (MainActivity.TOOL_TYPE_CURRENT == MainActivity.TOOL_TYPE_DEMO) {
+                        resEdit.append(getProcessName(msg.what) + " Start");
+                    } else if (MainActivity.TOOL_TYPE_CURRENT == MainActivity.TOOL_TYPE_PRODUCT_TEST) {
+                        resEdit.append(getProcessName(msg.what) + " 开始");
+                    }
+                    if (msg.what == BlueToothWrapper.MSG_UPDATE_COS_START) {
+                        m_progBar.setVisibility(View.VISIBLE);
+                    }
                     break;
                 case BlueToothWrapper.MSG_SIGN_UPDATE:
                 case BlueToothWrapper.MSG_VERIFYFP_UPDATE:
@@ -388,6 +429,10 @@ public class DevTestActivity extends AppCompatActivity {
                 case BlueToothWrapper.MSG_SET_LOGO_IMAGE_FINISH:
                 case BlueToothWrapper.MSG_GET_IMAGE_COUNT_FINISH:
                 case BlueToothWrapper.MSG_EOS_SERIALIZE_FINISH:
+                //case BlueToothWrapper.MSG_PRODUCT_TEST_FP_FINISH:
+                case BlueToothWrapper.MSG_PRODUCT_TEST_SCREEN_FINISH:
+                case BlueToothWrapper.MSG_UPDATE_COS_FINISH:
+                case BlueToothWrapper.MSG_GET_FW_VERSION_FINISH:
                     m_lineIndex = (m_lineIndex + 1) % 1000000;
                     resEdit.append("\n");
                     resEdit.append("[" + m_lineIndex + "]");
@@ -497,11 +542,30 @@ public class DevTestActivity extends AppCompatActivity {
                                 resEdit.append("\nSerialize Result: " + CommonUtility.byte2hex(returnValue.getSerializeData()));
                             }
                             resEdit.append("\nReturn Value: " + MiddlewareInterface.getReturnString(returnValue.getReturnValue()));
+                        } else if (msg.what == BlueToothWrapper.MSG_GET_FW_VERSION_FINISH) {
+                            BlueToothWrapper.GetFWVersionReturnValue returnValue = (BlueToothWrapper.GetFWVersionReturnValue)msg.obj;
+                            if (returnValue.getReturnValue() == MiddlewareInterface.PAEW_RET_SUCCESS) {
+                                resEdit.append("\nFW Version: \n" + returnValue.getFWVersion().toString());
+                            }
+                            resEdit.append("\nReturn Value: " + MiddlewareInterface.getReturnString(returnValue.getReturnValue()));
                         }
                     } else {
-                        resEdit.append("\nReturn Value: " + MiddlewareInterface.getReturnString(msg.arg1));
+                        if (MainActivity.TOOL_TYPE_CURRENT == MainActivity.TOOL_TYPE_DEMO) {
+                            resEdit.append("\nReturn Value: " + MiddlewareInterface.getReturnString(msg.arg1));
+                        } else if (MainActivity.TOOL_TYPE_CURRENT == MainActivity.TOOL_TYPE_PRODUCT_TEST) {
+                            resEdit.append("\n返回值：" + MiddlewareInterface.getReturnString(msg.arg1));
+                        }
                     }
-                    resEdit.append("\n" + getProcessName(msg.what) + " Finish");
+
+                    if (MainActivity.TOOL_TYPE_CURRENT == MainActivity.TOOL_TYPE_DEMO) {
+                        resEdit.append("\n" + getProcessName(msg.what) + " Finish");
+                    } else if (MainActivity.TOOL_TYPE_CURRENT == MainActivity.TOOL_TYPE_PRODUCT_TEST) {
+                        resEdit.append("\n" + getProcessName(msg.what) + " 结束");
+                    }
+
+                    if (msg.what == BlueToothWrapper.MSG_UPDATE_COS_FINISH) {
+                        m_progBar.setVisibility(View.GONE);
+                    }
 
                     if (msg.what == BlueToothWrapper.MSG_FREE_CONTEXT_FINISH) {
                         DevTestActivity.this.finish();
@@ -525,6 +589,27 @@ public class DevTestActivity extends AppCompatActivity {
                         m_textDevConnect.setText("Disconnected");
                         m_textDevState.setText(getResources().getString(R.string.text_dev_state));
                     }
+                    break;
+                case BlueToothWrapper.MSG_PRODUCT_TEST_FP_UPDATE:
+                    m_lineIndex = (m_lineIndex + 1) % 1000000;
+                    resEdit.append("\n");
+                    resEdit.append("[" + m_lineIndex + "]");
+                    if (msg.arg1 == MiddlewareInterface.PAEW_RET_DEV_FP_GOOG_FINGER) {
+                        resEdit.append("指纹测试成功");
+                    } else if (msg.arg1 == MiddlewareInterface.PAEW_RET_DEV_WAITING) {
+                        resEdit.append("请按压指纹传感器");
+                    } else {
+                        resEdit.append(MiddlewareInterface.getReturnString(msg.arg1));
+                    }
+                    break;
+                case BlueToothWrapper.MSG_UPDATE_COS_UPDATE:
+                    if (msg.obj != null) {
+                        m_lineIndex = (m_lineIndex + 1) % 1000000;
+                        resEdit.append("\n");
+                        resEdit.append("[" + m_lineIndex + "]");
+                        resEdit.append((String)msg.obj);
+                    }
+                    m_progBar.setProgress(msg.arg2); //arg1 suppose to used as return value
                     break;
             }
         }
@@ -859,6 +944,61 @@ public class DevTestActivity extends AppCompatActivity {
                 }
             });
 
+            curButton = curView.findViewById(R.id.btn_update_cos);
+            curButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    AlertDialog dlg = new AlertDialog.Builder(m_curContext)
+                            .setIcon(R.mipmap.icon_ble)
+                            .setTitle("Restart Update COS Procedure?")
+                            .setNegativeButton("No", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    m_bUpdateCOSRestart = false;
+
+                                    Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+                                    intent.setType("*/*"); //any type
+                                    intent.addCategory(Intent.CATEGORY_OPENABLE);
+                                    startActivityForResult(Intent.createChooser(intent, "Select COS File to Update"), COS_FILE_SELECT_CODE);
+                                }
+                            })
+                            .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    m_bUpdateCOSRestart = true;
+
+                                    Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+                                    intent.setType("*/*"); //any type
+                                    intent.addCategory(Intent.CATEGORY_OPENABLE);
+                                    startActivityForResult(Intent.createChooser(intent, "Select COS File to Update"), COS_FILE_SELECT_CODE);
+                                }
+                            })
+                            .setCancelable(false)
+                            .create();
+                    dlg.show();
+                }
+            });
+
+            curButton = curView.findViewById(R.id.btn_get_fw_version);
+            curButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if ((m_testThread == null) || (m_testThread.getState() == Thread.State.TERMINATED))
+                    {
+                        m_testThread = new BlueToothWrapper(m_mainHandler);
+                        ((BlueToothWrapper)m_testThread).setGetFWVersionWrapper(m_contextHandle, m_devIndex);
+                        m_testThread.start();
+                    }
+                    else
+                    {
+                        Toast toast = Toast.makeText(m_curContext, "Test Still Running", Toast.LENGTH_SHORT);
+                        toast.setGravity(Gravity.CENTER, 0, 0);
+                        toast.show();
+                    }
+                }
+            });
+
+            /*
             curButton = curView.findViewById(R.id.btn_writeSN);
             curButton.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -911,6 +1051,52 @@ public class DevTestActivity extends AppCompatActivity {
                     }
                 }
             });
+            */
+        }
+
+        @Override
+        public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+            super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        }
+
+        @Override
+        public void onActivityResult(int requestCode, int resultCode, Intent data) {
+            if (resultCode == Activity.RESULT_OK) {
+                if (requestCode == COS_FILE_SELECT_CODE) {
+                    Uri uri = data.getData();
+                    String filePath = FilePathResolver.getPath(m_curContext, uri);
+                    File filterFile = new File(filePath);
+                    byte[] fileData = null;
+
+                    if ((m_testThread == null) || (m_testThread.getState() == Thread.State.TERMINATED)) {
+                        try{
+                            byte[] bufferData = new byte[1024];
+                            int dataLen = 0;// 一次读取1024字节大小，没有数据后返回-1.
+
+                            FileInputStream fis = new FileInputStream(filterFile);
+                            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                            while ((dataLen = fis.read(bufferData)) != -1) {
+                                baos.write(bufferData, 0, dataLen);
+                            }
+                            fileData = baos.toByteArray();
+                            baos.close();
+                            fis.close();
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                        if (fileData != null) {
+                            m_testThread = new BlueToothWrapper(m_mainHandler);
+                            ((BlueToothWrapper)m_testThread).setUpdateCOSWrapper(m_contextHandle, m_devIndex, m_bUpdateCOSRestart, fileData);
+                            m_testThread.start();
+                        }
+                    } else {
+                        Toast toast = Toast.makeText(m_curContext, "Test Still Running", Toast.LENGTH_SHORT);
+                        toast.setGravity(Gravity.CENTER, 0, 0);
+                        toast.show();
+                    }
+                }
+            }
+            super.onActivityResult(requestCode, resultCode, data);
         }
     }
 
@@ -1650,10 +1836,111 @@ public class DevTestActivity extends AppCompatActivity {
         }
     }
 
+    public static class ProductTestFragment extends Fragment {
+        public ProductTestFragment() {
+        }
+
+        @Nullable
+        @Override
+        public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+            View viewRet = inflater.inflate(R.layout.fragment_product_test, container, false);
+
+            initClickListener(viewRet);
+
+            return viewRet;
+        }
+
+        void initClickListener(View curView) {
+            Button curButton;
+
+            curButton = curView.findViewById(R.id.btn_enrollfp);
+            curButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if ((m_testThread == null) || (m_testThread.getState() == Thread.State.TERMINATED))
+                    {
+                        m_testThread = new BlueToothWrapper(m_mainHandler);
+                        ((BlueToothWrapper)m_testThread).setProductTestFPWrapper(m_contextHandle, m_devIndex);
+                        m_testThread.start();
+                    }
+                    else
+                    {
+                        Toast toast = Toast.makeText(m_curContext, "Test Still Running", Toast.LENGTH_SHORT);
+                        toast.setGravity(Gravity.CENTER, 0, 0);
+                        toast.show();
+                    }
+                }
+            });
+
+            curButton = curView.findViewById(R.id.btn_show_image0);
+            curButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    final byte imageIndex = (byte)0;
+                    if ((m_testThread == null) || (m_testThread.getState() == Thread.State.TERMINATED))
+                    {
+                        m_testThread = new BlueToothWrapper(m_mainHandler);
+                        ((BlueToothWrapper)m_testThread).setProductTestScreenWrapper(m_contextHandle, m_devIndex, imageIndex, MiddlewareInterface.PAEW_LCD_CLEAR_SHOW_LOGO);
+                        m_testThread.start();
+                    }
+                    else
+                    {
+                        Toast toast = Toast.makeText(m_curContext, "Test Still Running", Toast.LENGTH_SHORT);
+                        toast.setGravity(Gravity.CENTER, 0, 0);
+                        toast.show();
+                    }
+                }
+            });
+
+            curButton = curView.findViewById(R.id.btn_calibrate);
+            curButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if ((m_testThread == null) || (m_testThread.getState() == Thread.State.TERMINATED))
+                    {
+                        m_testThread = new BlueToothWrapper(m_mainHandler);
+                        ((BlueToothWrapper)m_testThread).setCalibrateFPWrapper(m_contextHandle, m_devIndex);
+                        m_testThread.start();
+                    }
+                    else
+                    {
+                        Toast toast = Toast.makeText(m_curContext, "Test Still Running", Toast.LENGTH_SHORT);
+                        toast.setGravity(Gravity.CENTER, 0, 0);
+                        toast.show();
+                    }
+                }
+            });
+
+            curButton = curView.findViewById(R.id.btn_freeContextAndShutDown);
+            curButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if ((m_freeContextThread == null) || (m_freeContextThread.getState() == Thread.State.TERMINATED))
+                    {
+                        m_freeContextThread = new BlueToothWrapper(m_mainHandler);
+                        ((BlueToothWrapper)m_freeContextThread).setFreeContextAndShutDownWrapper(m_contextHandle);
+                        m_freeContextThread.start();
+
+                        m_contextHandle = 0;
+                        m_devIndex = MiddlewareInterface.INVALID_DEV_INDEX;
+                    }
+                    else
+                    {
+                        Toast toast = Toast.makeText(m_curContext, "Test Still Running", Toast.LENGTH_SHORT);
+                        toast.setGravity(Gravity.CENTER, 0, 0);
+                        toast.show();
+                    }
+                }
+            });
+        }
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_dev_test);
+
+        FilePathResolver.requestPermissions(this);
 
         m_curContext = this;
 
@@ -1672,43 +1959,63 @@ public class DevTestActivity extends AppCompatActivity {
 
         m_editResult = findViewById(R.id.edit_result);
 
+        m_progBar = findViewById(R.id.dev_progress);
+        m_progBar.setVisibility(View.GONE);
+
         m_viewPager = findViewById(R.id.test_container);
         m_viewPager.setAdapter(new TestPagerAdapter(getSupportFragmentManager()));
 
         //init fragments
         m_fragList = new ArrayList<>(0);
-        m_fragList.add(new DeviceTestFragment());
-        m_fragList.add(new FingerPrintTestFragment());
-        m_fragList.add(new InitWalletTestFragment());
-        m_fragList.add(new WalletTestFragment());
+        if (MainActivity.TOOL_TYPE_CURRENT == MainActivity.TOOL_TYPE_DEMO) {
+            m_fragList.add(new DeviceTestFragment());
+            m_fragList.add(new FingerPrintTestFragment());
+            m_fragList.add(new InitWalletTestFragment());
+            m_fragList.add(new WalletTestFragment());
+        } else if (MainActivity.TOOL_TYPE_CURRENT == MainActivity.TOOL_TYPE_PRODUCT_TEST) {
+            m_fragList.add(new ProductTestFragment());
+        }
 
         //!!!!!must do it!!!!!!
         m_viewPager.getAdapter().notifyDataSetChanged();
 
         m_tabTests = findViewById(R.id.test_tab);
-        m_tabTests.addTab(m_tabTests.newTab().setText(R.string.tab_item_device).setTag(TAB_DEVICE));
-        m_tabTests.addTab(m_tabTests.newTab().setText(R.string.tab_item_fp).setTag(TAB_FINGERPRINT));
-        m_tabTests.addTab(m_tabTests.newTab().setText(R.string.tab_item_init).setTag(TAB_INIT_WALLET));
-        m_tabTests.addTab(m_tabTests.newTab().setText(R.string.tab_item_wallet).setTag(TAB_WALLET));
+        if (MainActivity.TOOL_TYPE_CURRENT == MainActivity.TOOL_TYPE_DEMO) {
+            m_tabTests.addTab(m_tabTests.newTab().setText(R.string.tab_item_device).setTag(TAB_DEVICE));
+            m_tabTests.addTab(m_tabTests.newTab().setText(R.string.tab_item_fp).setTag(TAB_FINGERPRINT));
+            m_tabTests.addTab(m_tabTests.newTab().setText(R.string.tab_item_init).setTag(TAB_INIT_WALLET));
+            m_tabTests.addTab(m_tabTests.newTab().setText(R.string.tab_item_wallet).setTag(TAB_WALLET));
+        } else if (MainActivity.TOOL_TYPE_CURRENT == MainActivity.TOOL_TYPE_PRODUCT_TEST) {
+            m_tabTests.addTab(m_tabTests.newTab().setText(R.string.tab_item_product_test).setTag(TAB_PRODUCT_TEST));
+        }
+
         m_tabTests.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
             @Override
             public void onTabSelected(TabLayout.Tab tab) {
                 int layout_height = 0;
                 LinearLayout.LayoutParams layoutParams = null;
 
-                switch((int)tab.getTag()) {
-                    case TAB_DEVICE:
-                        m_viewPager.setCurrentItem(0);
-                        break;
-                    case TAB_FINGERPRINT:
-                        m_viewPager.setCurrentItem(1);
-                        break;
-                    case TAB_INIT_WALLET:
-                        m_viewPager.setCurrentItem(2);
-                        break;
-                    case TAB_WALLET:
-                        m_viewPager.setCurrentItem(3);
-                        break;
+                if (MainActivity.TOOL_TYPE_CURRENT == MainActivity.TOOL_TYPE_DEMO) {
+                    switch((int)tab.getTag()) {
+                        case TAB_DEVICE:
+                            m_viewPager.setCurrentItem(0);
+                            break;
+                        case TAB_FINGERPRINT:
+                            m_viewPager.setCurrentItem(1);
+                            break;
+                        case TAB_INIT_WALLET:
+                            m_viewPager.setCurrentItem(2);
+                            break;
+                        case TAB_WALLET:
+                            m_viewPager.setCurrentItem(3);
+                            break;
+                    }
+                } else if (MainActivity.TOOL_TYPE_CURRENT == MainActivity.TOOL_TYPE_PRODUCT_TEST) {
+                    switch((int)tab.getTag()) {
+                        case TAB_PRODUCT_TEST:
+                            m_viewPager.setCurrentItem(0);
+                            break;
+                    }
                 }
             }
 

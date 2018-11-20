@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TableLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent" android:layout_height="match_parent">
+    <TableRow  android:gravity="center">
+        <Button
+            android:id="@+id/btn_enrollfp"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:text="@string/btn_test_fp"
+            android:textAllCaps="false" />
+        <Button
+            android:id="@+id/btn_show_image0"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:text="@string/btn_test_screen"
+            android:textAllCaps="false" />
+    </TableRow>
+    <TableRow>
+        <Button
+            android:id="@+id/btn_calibrate"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:text="@string/btn_test_calibrate"
+            android:textAllCaps="false" />
+        <Button
+            android:id="@+id/btn_freeContextAndShutDown"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:text="@string/btn_test_freeContextAndShutDown"
+            android:textAllCaps="false" />
+    </TableRow>
+</TableLayout>

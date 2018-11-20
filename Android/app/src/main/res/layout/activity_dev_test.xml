@@ -27,7 +27,6 @@
             android:textAlignment="textEnd"/>
     </LinearLayout>
 
-
     <android.support.design.widget.TabLayout
         android:id="@+id/test_tab"
         android:layout_width="match_parent"
@@ -43,18 +42,24 @@
         android:id="@+id/test_container"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1.6"/>
+        android:layout_weight="11"/>
 
     <EditText
         android:id="@+id/edit_result"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="3"
-        android:ems="10"
-        android:inputType="textMultiLine"
+        android:layout_weight="20"
         android:background="@drawable/list_boader"
+        android:ems="10"
+        android:focusable="false"
         android:gravity="top"
-        android:focusable="false"/>
+        android:inputType="textMultiLine" />
 
+    <ProgressBar
+        android:id="@+id/dev_progress"
+        style="@android:style/Widget.ProgressBar.Horizontal"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:layout_width="match_parent" />
 
 </LinearLayout>

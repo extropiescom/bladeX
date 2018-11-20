@@ -67,4 +67,11 @@
     <string name="btn_get_image_count">GetICount</string>
     <string name="edit_image_name">Please Input Image Name</string>
     <string name="btn_eos_serialize">EOS Ser</string>
+    <string name="btn_test_fp">测试1</string>
+    <string name="btn_test_screen">测试2</string>
+    <string name="btn_test_calibrate">校正传感器</string>
+    <string name="tab_item_product_test">指纹卡测试</string>
+    <string name="btn_test_freeContextAndShutDown">断开设备</string>
+    <string name="btn_update_cos">UpdateCOS</string>
+    <string name="btn_get_fw_version">GetFWVersion</string>
 </resources>
