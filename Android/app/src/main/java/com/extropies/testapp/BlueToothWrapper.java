@@ -170,6 +170,8 @@ public class BlueToothWrapper extends Thread {
     public static final int MSG_GET_FW_VERSION_START = 93;
     public static final int MSG_GET_FW_VERSION_FINISH = 94;
 
+    public static final int MSG_INIT_PIN_UPDATE = 95;
+
     private static Map<String, Object> m_listCommLock;
     private Object m_objCommLock;
 
@@ -520,6 +522,24 @@ public class BlueToothWrapper extends Thread {
                 Thread.sleep(20);
             } catch (Exception e) {
                 e.printStackTrace();
+            }
+        }
+    };
+
+    private CommonUtility.putStateCallback m_putStateCallback = new CommonUtility.putStateCallback() {
+        @Override
+        public void pushState(int nState) {
+            Message msg;
+
+            msg = m_mainHandler.obtainMessage();
+            msg.what = MSG_INIT_PIN_UPDATE;
+            msg.arg1 = nState;
+            msg.sendToTarget();
+
+            if (m_bAborting) {
+                m_commonLock.unlock();
+                while(m_bAborting);
+                m_commonLock.lock();
             }
         }
     };
@@ -1835,7 +1855,7 @@ public class BlueToothWrapper extends Thread {
                 if (m_contextHandle == 0) {
                     iRtn = MiddlewareInterface.PAEW_RET_DEV_COMMUNICATE_FAIL;
                 } else {
-                    iRtn = MiddlewareInterface.initPIN(m_contextHandle, m_devIndex, m_strPIN);
+                    iRtn = MiddlewareInterface.initPIN(m_contextHandle, m_devIndex, m_strPIN, m_putStateCallback);
                 }
                 m_commonLock.unlock();
 

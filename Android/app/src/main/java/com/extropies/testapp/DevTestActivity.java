@@ -146,6 +146,7 @@ public class DevTestActivity extends AppCompatActivity {
                     strProcessName = "Change PIN";
                     break;
                 case BlueToothWrapper.MSG_INIT_PIN_START:
+                case BlueToothWrapper.MSG_INIT_PIN_UPDATE:
                 case BlueToothWrapper.MSG_INIT_PIN_FINISH:
                     strProcessName = "Init PIN";
                     break;
@@ -393,6 +394,7 @@ public class DevTestActivity extends AppCompatActivity {
                 case BlueToothWrapper.MSG_SIGN_UPDATE:
                 case BlueToothWrapper.MSG_VERIFYFP_UPDATE:
                 case BlueToothWrapper.MSG_ENROLL_UPDATE:
+                case BlueToothWrapper.MSG_INIT_PIN_UPDATE:
                     m_lineIndex = (m_lineIndex + 1) % 1000000;
                     resEdit.append("\n");
                     resEdit.append("[" + m_lineIndex + "]");
