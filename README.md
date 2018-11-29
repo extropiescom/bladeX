@@ -6,7 +6,7 @@ communication will be blocked._
 
 ## More details:
 * [wiki: home](https://github.com/extropiescom/bladeX/wiki)
-* [wiki: android API](https://github.com/extropiescom/bladeX/wiki/bladeX-Android-API)
+* [wiki: android API](https://github.com/extropiescom/bladeX/wiki/bladeX-Android-API-(For-hackathon))
 
 ## 1. How to connect and disconnect:
    - Invoke `MiddlewareInterface.getDeviceList()` to get device name list, device names
