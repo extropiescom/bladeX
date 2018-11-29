@@ -50,7 +50,6 @@ public class BlueToothWrapper extends Thread {
     public static final int CYB_SIGN_WRAPPER = 30;
     public static final int GET_CHECK_CODE_WRAPPER = 31;
     public static final int CLEAR_COS_WRAPPER = 32;
-    public static final int WRITE_SN_WRAPPER = 33;
     public static final int RECOVER_SEED_WRAPPER = 34;
     public static final int RECOVER_ADDRESS_WRAPPER = 35;
     public static final int SET_IMAGE_DATA_WRAPPER = 36;
@@ -136,8 +135,6 @@ public class BlueToothWrapper extends Thread {
     public static final int MSG_GET_CHECK_CODE_FINISH = 62;
     public static final int MSG_CLEAR_COS_START = 63;
     public static final int MSG_CLEAR_COS_FINISH = 64;
-    public static final int MSG_WRITE_SN_START = 65;
-    public static final int MSG_WRITE_SN_FINISH = 66;
     public static final int MSG_RECOVER_SEED_START = 67;
     public static final int MSG_RECOVER_SEED_FINISH = 68;
     public static final int MSG_RECOVER_ADDRESS_START = 69;
@@ -576,19 +573,16 @@ public class BlueToothWrapper extends Thread {
         return iRtn;
     }
 
-    /*
-     * 签名回调接口
-     * 签名函数调用回调接口的流程如下：
-     * 1. 调用getAuthResult，用户选择签名认证类型的操作结果是确认或是取消。此接口应返回PAEW_RET_SUCCESS或PAEW_RET_DEV_OP_CANCEL。此接口若返回PAEW_RET_SUCCESS，签名函数继续执行，此接口若返回PAEW_RET_DEV_OP_CANCEL，则在返回之前，需要调用abort接口以终止签名流程。
-     * 2. 调用getAuthType，获取签名认证类型。
-     * 3. 若签名认证类型为PIN认证，则调用getPINResult，用户输入PIN的操作结果是确认或取消。此接口应返回PAEW_RET_SUCCESS或PAEW_RET_DEV_OP_CANCEL。此接口若返回PAEW_RET_SUCCESS，签名函数继续执行，此接口若返回PAEW_RET_DEV_OP_CANCEL，则在返回之前，需要调用abort接口以终止签名流程。
-     * 4. 若签名认证类型为PIN认证，且用户输入PIN的结果是确认，则调用getPIN，获取用户输入的PIN码。
-     * 5. 使用用户选择的签名认证类型，执行签名操作。
-     * 6. 若签名操作返回错误，且之前选择的不是PIN认证，则调用getPINResult，用户输入PIN的操作结果是确认或取消。此接口应返回PAEW_RET_SUCCESS或PAEW_RET_DEV_OP_CANCEL。此接口若返回PAEW_RET_SUCCESS，签名函数继续执行，此接口若返回PAEW_RET_DEV_OP_CANCEL，则在返回之前，需要调用abort接口以终止签名流程。
-     * 7. 若签名操作返回错误，且之前选择的不是PIN认证，且用户输入PIN的结果是确认，则调用getPIN，获取用户输入的PIN码。
-     * 5. 若签名操作返回错误，且之前选择的不是PIN认证，则使用PIN码认证，执行签名操作。
+    /**
+     * Sign Callbacks
+     * Callbacks are invoked in the following sequence
+     * 1. Invoke getAuthResult(), return PAEW_RET_SUCCESS or PAEW_RET_DEV_OP_CANCEL, indicates user chooses OK or Cancel on UI. If returns PAEW_RET_SUCCESS, signature will go on; if returns PAEW_RET_DEV_OP_CANCEL, you should call abort() to end this sign procedure.
+     * 2. Invoke getAuthType(), return PAEW_SIGN_AUTH_TYPE_PIN or PAEW_SIGN_AUTH_TYPE_FP.
+     * 3. If getAuthType() returns PAEW_SIGN_AUTH_TYPE_PIN, then call getPINResult(). getPINResult() returns PAEW_RET_SUCCESS or PAEW_RET_DEV_OP_CANCEL, indicates user choosesOK or Cancel on UI.If returns PAEW_RET_SUCCESS, signature will go on; if returns PAEW_RET_DEV_OP_CANCEL, you should call abort() to end this sign procedure.
+     * 4. If getAuthType() returns PAEW_SIGN_AUTH_TYPE_PIN, and getPINResult() returns PAEW_RET_SUCCESS, then call getPIN() to get PIN from UI.
+     * 5. Do signature according to user's option.
      *
-     * 签名函数的伪代码如下：
+     * pseudo-code of signature method:
      * if (MiddlewareInterface.PAEW_RET_SUCCESS != getAuthResult()) {
      *     return;
      * }
@@ -1243,16 +1237,6 @@ public class BlueToothWrapper extends Thread {
 
         m_contextHandle = contextHandle;
         m_devIndex = devIndex;
-        return true;
-    }
-
-    boolean setWriteSNWrapper(long contextHandle, int devIndex, String strSerialNumber) {
-        m_wrapperType = WRITE_SN_WRAPPER;
-
-        m_contextHandle = contextHandle;
-        m_devIndex = devIndex;
-
-        m_strSerialNumber = strSerialNumber;
         return true;
     }
 
@@ -2172,24 +2156,6 @@ public class BlueToothWrapper extends Thread {
 
                 msg = m_mainHandler.obtainMessage();
                 msg.what = MSG_CLEAR_COS_FINISH;
-                msg.arg1= iRtn;
-                msg.sendToTarget();
-                break;
-            case WRITE_SN_WRAPPER:
-                msg = m_mainHandler.obtainMessage();
-                msg.what = MSG_WRITE_SN_START;
-                msg.sendToTarget();
-
-                m_commonLock.lock();
-                if (m_contextHandle == 0) {
-                    iRtn = MiddlewareInterface.PAEW_RET_DEV_COMMUNICATE_FAIL;
-                } else {
-                    iRtn = MiddlewareInterface.writeSN(m_contextHandle, m_devIndex, m_strSerialNumber);
-                }
-                m_commonLock.unlock();
-
-                msg = m_mainHandler.obtainMessage();
-                msg.what = MSG_WRITE_SN_FINISH;
                 msg.arg1= iRtn;
                 msg.sendToTarget();
                 break;

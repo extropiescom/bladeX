@@ -194,10 +194,6 @@ public class DevTestActivity extends AppCompatActivity {
                 case BlueToothWrapper.MSG_CLEAR_COS_FINISH:
                     strProcessName = "Clear COS";
                     break;
-                case BlueToothWrapper.MSG_WRITE_SN_START:
-                case BlueToothWrapper.MSG_WRITE_SN_FINISH:
-                    strProcessName = "Write SN";
-                    break;
                 case BlueToothWrapper.MSG_RECOVER_SEED_START:
                 case BlueToothWrapper.MSG_RECOVER_SEED_FINISH:
                     strProcessName = "Recover Seed";
@@ -363,7 +359,6 @@ public class DevTestActivity extends AppCompatActivity {
                 case BlueToothWrapper.MSG_CLEAR_SCREEN_START:
                 case BlueToothWrapper.MSG_GET_CHECK_CODE_START:
                 case BlueToothWrapper.MSG_CLEAR_COS_START:
-                case BlueToothWrapper.MSG_WRITE_SN_START:
                 case BlueToothWrapper.MSG_RECOVER_SEED_START:
                 case BlueToothWrapper.MSG_RECOVER_ADDRESS_START:
                 case BlueToothWrapper.MSG_SET_IMAGE_DATA_START:
@@ -421,7 +416,6 @@ public class DevTestActivity extends AppCompatActivity {
                 case BlueToothWrapper.MSG_CLEAR_SCREEN_FINISH:
                 case BlueToothWrapper.MSG_GET_CHECK_CODE_FINISH:
                 case BlueToothWrapper.MSG_CLEAR_COS_FINISH:
-                case BlueToothWrapper.MSG_WRITE_SN_FINISH:
                 case BlueToothWrapper.MSG_RECOVER_SEED_FINISH:
                 case BlueToothWrapper.MSG_RECOVER_ADDRESS_FINISH:
                 case BlueToothWrapper.MSG_SET_IMAGE_DATA_FINISH:
@@ -999,61 +993,6 @@ public class DevTestActivity extends AppCompatActivity {
                     }
                 }
             });
-
-            /*
-            curButton = curView.findViewById(R.id.btn_writeSN);
-            curButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    if ((m_testThread == null) || (m_testThread.getState() == Thread.State.TERMINATED))
-                    {
-                        View dlgView = getLayoutInflater().inflate(R.layout.dlg_write_sn, null);
-                        final EditText editSN = dlgView.findViewById(R.id.edit_sn);
-                        AlertDialog dlg = new AlertDialog.Builder(m_curContext)
-                                .setIcon(R.mipmap.icon_ble)
-                                .setTitle("Please Input Serial Number:")
-                                .setView(dlgView).setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                                    @Override
-                                    public void onClick(DialogInterface dialog, int which) {
-                                    }
-                                })
-                                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                                    @Override
-                                    public void onClick(DialogInterface dialog, int which) {
-                                        int SNLen = editSN.getText().toString().length();
-                                        if ((SNLen < m_minSNLen) || (SNLen > m_maxPINLen)) {
-                                            Toast toast = Toast.makeText(m_curContext, "Please input SN between " + m_minSNLen + " and " + m_maxPINLen, Toast.LENGTH_SHORT);
-                                            toast.setGravity(Gravity.CENTER, 0, 0);
-                                            toast.show();
-                                            return;
-                                        }
-                                        if ((m_testThread == null) || (m_testThread.getState() == Thread.State.TERMINATED))
-                                        {
-                                            m_testThread = new BlueToothWrapper(m_mainHandler);
-                                            ((BlueToothWrapper)m_testThread).setWriteSNWrapper(m_contextHandle, m_devIndex, editSN.getText().toString());
-                                            m_testThread.start();
-                                        }
-                                        else
-                                        {
-                                            Toast toast = Toast.makeText(m_curContext, "Test Still Running", Toast.LENGTH_SHORT);
-                                            toast.setGravity(Gravity.CENTER, 0, 0);
-                                            toast.show();
-                                        }
-                                    }
-                                })
-                                .setCancelable(false)
-                                .create();
-                        dlg.show();
-                    }
-                    else
-                    {
-                        Toast toast = Toast.makeText(m_curContext, "Test Still Running", Toast.LENGTH_SHORT);
-                        toast.setGravity(Gravity.CENTER, 0, 0);
-                        toast.show();
-                    }
-                }
-            });
-            */
         }
 
         @Override
@@ -1582,6 +1521,7 @@ public class DevTestActivity extends AppCompatActivity {
             curButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
+                    //eos sign
                     int[] derivePath = {0, 0x8000002C, 0x800000c2, 0x80000000, 0x00000000, 0x00000000};
                     byte[] transaction = {(byte)0x74, (byte)0x09, (byte)0x70, (byte)0xd9, (byte)0xff, (byte)0x01, (byte)0xb5, (byte)0x04, (byte)0x63, (byte)0x2f, (byte)0xed, (byte)0xe1, (byte)0xad, (byte)0xc3, (byte)0xdf, (byte)0xe5, (byte)0x59, (byte)0x90, (byte)0x41, (byte)0x5e, (byte)0x4f, (byte)0xde, (byte)0x01, (byte)0xe1, (byte)0xb8, (byte)0xf3, (byte)0x15, (byte)0xf8, (byte)0x13, (byte)0x6f, (byte)0x47, (byte)0x6c, (byte)0x14, (byte)0xc2, (byte)0x67, (byte)0x5b, (byte)0x01, (byte)0x24, (byte)0x5f, (byte)0x70, (byte)0x5d, (byte)0xd7, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x01, (byte)0x00, (byte)0xa6, (byte)0x82, (byte)0x34, (byte)0x03, (byte)0xea, (byte)0x30, (byte)0x55, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x57, (byte)0x2d, (byte)0x3c, (byte)0xcd, (byte)0xcd, (byte)0x01, (byte)0x20, (byte)0x29, (byte)0xc2, (byte)0xca, (byte)0x55, (byte)0x7a, (byte)0x73, (byte)0x57, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0xa8, (byte)0xed, (byte)0x32, (byte)0x32, (byte)0x21, (byte)0x20, (byte)0x29, (byte)0xc2, (byte)0xca, (byte)0x55, (byte)0x7a, (byte)0x73, (byte)0x57, (byte)0x90, (byte)0x55, (byte)0x8c, (byte)0x86, (byte)0x77, (byte)0x95, (byte)0x4c, (byte)0x3c, (byte)0x10, (byte)0x27, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x04, (byte)0x45, (byte)0x4f, (byte)0x53, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00};
                     if ((m_testThread == null) || (m_testThread.getState() == Thread.State.TERMINATED))
