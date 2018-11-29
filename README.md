@@ -1,5 +1,6 @@
 # Wookong for bio
 com.extropies.common.MiddlewareInterface is main interface to interact with the device
+
 _NOTE: All the method mentioned here should NOT be called in main thread, or bluetooth
 communication will be blocked._
 
@@ -29,7 +30,11 @@ communication will be blocked._
    - Invoke `MiddlewareInterface.deriveTradeAddress(contextHandle, 0, PAEW_COIN_TYPE_EOS, derivePath)`, with
    `derivePath = {0, 0x8000002C, 0x800000c2, 0x80000000, 0x00000000, 0x00000000};` according to [slip-44](https://github.com/satoshilabs/slips/blob/master/slip-0044.md).
    - (Optional) Invoke `MiddlewareInterface.eos_tx_serialize()` to serialize json string to binary.
+   
    _NOTE1: ref_block_prefix field of json object MUST be wrapped by quotation marks ("") if you pass it to `MiddlewareInterface.eos_tx_serialize()`, such as \"2642943355\" in the following._
+   
+   _NOTE2: serializeData is the binary form of transaction, you should prefix it with 32 bytes of chain_id, and padding with 32 bytes of zeros, then pass it to `MiddlewareInterface.EOSSign()` to sign._
+   
    ```java
    String jsonTxString = "{\"expiration\":\"2018-05-16T02:49:35\",\"ref_block_num\":4105,\"ref_block_prefix\":\"2642943355\",\"max_net_usage_words\":0,\"max_cpu_usage_ms\":0,\"delay_sec\":0,\"context_free_actions\":[],\"actions\":[{\"account\":\"eosio\",\"name\":\"newaccount\",\"authorization\":[{\"actor\":\"eosio\",\"permission\":\"active\"}],\"data\":\"0000000000ea30550000000000000e3d01000000010003224c02ca019e9c0c969d2c8006b89275abeeb5b05af68f2cf5f497bd6e1aff6d01000000010000000100038d424cbe81564f1e4338d342a4dc2b70d848d8b026d3f783bc7c8e6c3c6733cf01000000\"}],\"transaction_extensions\":[],\"signatures\":[],\"context_free_data\":[]}";
    byte[] serializeData = null;
@@ -43,7 +48,6 @@ communication will be blocked._
       iRtn = MiddlewareInterface.eos_tx_serialize(m_strEOSTxString, serializeData, serializeDataLen);
    }
    ```   
-   _NOTE2: serializeData is the binary form of transaction, you should prefix it with 32 bytes of chain_id, and padding with 32 bytes of zeros, then pass it to `MiddlewareInterface.EOSSign()` to sign._
    - Invoke `MiddlewareInterface.EOSSign(contextHandle, 0, signCallback, transaction, signature, sigLen)`, 
    _this transaction is serialized result of a json transaction string, prefixed with chain_id (32 bytes) and tailed with zeros (32 bytes)_
    ```java
