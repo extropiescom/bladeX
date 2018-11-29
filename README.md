@@ -1,39 +1,31 @@
-
-More details:
-https://github.com/extropiescom/bladeX/wiki
-
-https://github.com/extropiescom/bladeX/wiki/bladeX-Android-API
-
-com.extropies.common.MiddlewareInterface is main interface to interact with the device
-NOTE: All the method mentioned here should NOT be called in main thread, or bluetooth
-communication will be blocked.
-
 #Wookong for bio
+com.extropies.common.MiddlewareInterface is main interface to interact with the device
+_NOTE: All the method mentioned here should NOT be called in main thread, or bluetooth
+communication will be blocked._
 
-More details:
-
+##More details:
 * [wiki: home](https://github.com/extropiescom/bladeX/wiki)
 * [wiki: android API](https://github.com/extropiescom/bladeX/wiki/bladeX-Android-API)
 
-1. How to connect and disconnect:
+##1. How to connect and disconnect:
    - Invoke `MiddlewareInterface.getDeviceList()` to get device name list, device names
    are in format of "device_name####device_address".
    - Use `MiddlewareInterface.initContextWithDevName()` to connect device, with devName
    chosen from `MiddlewareInterface.getDeviceList()` result.
    - User `MiddlewareInterface.freeContext()` or `freeContextAndShutDown()` to disconnect
    and power down the device.
-2. How to initialize device:
+##2. How to initialize device:
    - PIN initialize: If `MiddlewareInterface.getDevInfo()` returns device info with `ucPINState == MiddlewareInterace.PAEW_DEV_INFO_PIN_UNSET`,
-   this means PIN haven't been set, and you should call MiddlewareInterface.initPIN() to initialize.
+   this means PIN haven't been set, and you should call `MiddlewareInterface.initPIN()` to initialize.
    - Seed initialize: If `MiddlewareInterface.getDevInfo()` returns device info with `ucLifeCycle == MiddlewareInterace.PAEW_DEV_INFO_LIFECYCLE_PRODUCE`,
    this means there're no seed inside device, and you should initialize device first (after device initialization, ucLifeCycle
    should be `MiddlewareInterface.PAEW_DEV_INFO_LIFECYCLE_USER`). Invoke `MiddlewareInterface.generateSeed_GetMnes()` + `MiddlewareInterface.generateSeed_CheckMnes()`
    to generate new seed, or invoke `MiddlewareInterface.importMne()` to import mnemonics to import seed.
-3. How to get EOS address:
+##3. How to get EOS address:
    - Invoke `MiddlewareInterface.deriveTradeAddress(contextHandle, 0, PAEW_COIN_TYPE_EOS, derivePath)`, with
    `derivePath = {0, 0x8000002C, 0x800000c2, 0x80000000, 0x00000000, 0x00000000}` according to [slip-44](https://github.com/satoshilabs/slips/blob/master/slip-0044.md).
    - Invoke `MiddlewareInterface.getTradeAddress(contextHandle, 0, PAEW_COIN_TYPE_EOS, bShowOnScreen, strAddress)` to get EOS address.
-4. How to sign EOS transaction:
+##4. How to sign EOS transaction:
    - Invoke `MiddlewareInterface.deriveTradeAddress(contextHandle, 0, PAEW_COIN_TYPE_EOS, derivePath)`, with
    `derivePath = {0, 0x8000002C, 0x800000c2, 0x80000000, 0x00000000, 0x00000000};` according to [slip-44](https://github.com/satoshilabs/slips/blob/master/slip-0044.md).
    - (Optional) Invoke `MiddlewareInterface.eos_tx_serialize()` to serialize json string to binary.
@@ -61,7 +53,7 @@ More details:
    sigLen[0] = MiddlewareInterface.PAEW_ETH_SIG_MAX_LEN;
    iRtn = MiddlewareInterface.EOSSign(contextHandle, 0, signCallback, transaction, signature, sigLen);
    ```
-5. Sign Callbacks
+##5. Sign Callbacks
    
    _Sign callbacks are invoked in the following sequence:_
    - Invoke `MiddlewareInterface.getAuthResult()`, return `PAEW_RET_SUCCESS` or `PAEW_RET_DEV_OP_CANCEL`, indicates user chooses OK or Cancel on UI. If returns `PAEW_RET_SUCCESS`, signature will go on; if returns `PAEW_RET_DEV_OP_CANCE`L, you should call `abort()` to end this sign procedure.
