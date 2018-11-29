@@ -101,10 +101,6 @@ import java.io.FileOutputStream;
 import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
-    public static final int TOOL_TYPE_DEMO = 0;
-    public static final int TOOL_TYPE_PRODUCT_TEST = 1;
-    public static final int TOOL_TYPE_CURRENT = TOOL_TYPE_DEMO;
-
     private Button m_btnEnum;
     private EditText m_editFilter;
     private ProgressBar m_progBar;
@@ -173,10 +169,8 @@ public class MainActivity extends AppCompatActivity {
                         m_devListImage = imgView;
                         m_devListCurrentDevName = strDeviceName;
 
-                        if (TOOL_TYPE_CURRENT == TOOL_TYPE_DEMO) {
-                            m_editFilter.setText(strDeviceName);
-                            ((MainActivity)m_context).setFilterString(strDeviceName);
-                        }
+                        m_editFilter.setText(strDeviceName);
+                        ((MainActivity)m_context).setFilterString(strDeviceName);
 
                         m_testThread = new BlueToothWrapper(m_mainHandler);
                         ((BlueToothWrapper)m_testThread).setInitContextWithDevNameWrapper((Activity) m_context, strDeviceName);
@@ -414,11 +408,6 @@ public class MainActivity extends AppCompatActivity {
 
         m_progBar.setVisibility(View.GONE);
 
-        if (MainActivity.TOOL_TYPE_CURRENT == MainActivity.TOOL_TYPE_PRODUCT_TEST) {
-            if (getFilterString() == "") {
-                setFilterString("WOOKONG BIO");
-            }
-        }
         m_editFilter.getText().append(getFilterString());
 
         m_devNameList = new ArrayList<>(0);

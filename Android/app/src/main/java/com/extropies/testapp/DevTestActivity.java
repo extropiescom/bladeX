@@ -53,8 +53,6 @@ public class DevTestActivity extends AppCompatActivity {
 
     private ProgressBar m_progBar;
 
-    public static int COS_FILE_SELECT_CODE = 0;
-
     protected static ReentrantLock m_uiLock;
     protected static int m_coinChoiceIndex = 0;
     public static int m_authTypeResult = 0;
@@ -146,7 +144,6 @@ public class DevTestActivity extends AppCompatActivity {
                     strProcessName = "Change PIN";
                     break;
                 case BlueToothWrapper.MSG_INIT_PIN_START:
-                case BlueToothWrapper.MSG_INIT_PIN_UPDATE:
                 case BlueToothWrapper.MSG_INIT_PIN_FINISH:
                     strProcessName = "Init PIN";
                     break;
@@ -186,67 +183,9 @@ public class DevTestActivity extends AppCompatActivity {
                 case BlueToothWrapper.MSG_CLEAR_SCREEN_FINISH:
                     strProcessName = "Clear Screen";
                     break;
-                case BlueToothWrapper.MSG_GET_CHECK_CODE_START:
-                case BlueToothWrapper.MSG_GET_CHECK_CODE_FINISH:
-                    strProcessName = "Get Device Check Code";
-                    break;
-                case BlueToothWrapper.MSG_CLEAR_COS_START:
-                case BlueToothWrapper.MSG_CLEAR_COS_FINISH:
-                    strProcessName = "Clear COS";
-                    break;
-                case BlueToothWrapper.MSG_RECOVER_SEED_START:
-                case BlueToothWrapper.MSG_RECOVER_SEED_FINISH:
-                    strProcessName = "Recover Seed";
-                    break;
-                case BlueToothWrapper.MSG_RECOVER_ADDRESS_START:
-                case BlueToothWrapper.MSG_RECOVER_ADDRESS_FINISH:
-                    strProcessName = "Recover Address";
-                    break;
-                case BlueToothWrapper.MSG_SET_IMAGE_DATA_START:
-                case BlueToothWrapper.MSG_SET_IMAGE_DATA_FINISH:
-                    strProcessName = "Set Image Data";
-                    break;
-                case BlueToothWrapper.MSG_SHOW_IMAGE_START:
-                case BlueToothWrapper.MSG_SHOW_IMAGE_FINISH:
-                    strProcessName = "Show Image";
-                    break;
-                case BlueToothWrapper.MSG_SET_IMAGE_NAME_START:
-                case BlueToothWrapper.MSG_SET_IMAGE_NAME_FINISH:
-                    strProcessName = "Set Image Name";
-                    break;
-                case BlueToothWrapper.MSG_GET_IMAGE_NAME_START:
-                case BlueToothWrapper.MSG_GET_IMAGE_NAME_FINISH:
-                    strProcessName = "Get Image Name";
-                    break;
-                case BlueToothWrapper.MSG_SET_LOGO_IMAGE_START:
-                case BlueToothWrapper.MSG_SET_LOGO_IMAGE_FINISH:
-                    strProcessName = "Set Logo";
-                    break;
-                case BlueToothWrapper.MSG_GET_IMAGE_COUNT_START:
-                case BlueToothWrapper.MSG_GET_IMAGE_COUNT_FINISH:
-                    strProcessName = "Get Image Count";
-                    break;
                 case BlueToothWrapper.MSG_EOS_SERIALIZE_START:
                 case BlueToothWrapper.MSG_EOS_SERIALIZE_FINISH:
                     strProcessName = "EOS Transaction Serialize";
-                    break;
-                case BlueToothWrapper.MSG_PRODUCT_TEST_FP_START:
-                case BlueToothWrapper.MSG_PRODUCT_TEST_FP_UPDATE:
-                case BlueToothWrapper.MSG_PRODUCT_TEST_FP_FINISH:
-                    strProcessName = "指纹测试";
-                    break;
-                case BlueToothWrapper.MSG_PRODUCT_TEST_SCREEN_START:
-                case BlueToothWrapper.MSG_PRODUCT_TEST_SCREEN_FINISH:
-                    strProcessName = "屏幕测试";
-                    break;
-                case BlueToothWrapper.MSG_UPDATE_COS_START:
-                case BlueToothWrapper.MSG_UPDATE_COS_UPDATE:
-                case BlueToothWrapper.MSG_UPDATE_COS_FINISH:
-                    strProcessName = "Update COS";
-                    break;
-                case BlueToothWrapper.MSG_GET_FW_VERSION_START:
-                case BlueToothWrapper.MSG_GET_FW_VERSION_FINISH:
-                    strProcessName = "Get FW Version";
                     break;
             }
 
@@ -264,7 +203,7 @@ public class DevTestActivity extends AppCompatActivity {
                     final String[] authTypeString = {"Sign by Finger Print", "Sign by PIN"};
                     final byte[] authTypes = {MiddlewareInterface.PAEW_SIGN_AUTH_TYPE_FP, MiddlewareInterface.PAEW_SIGN_AUTH_TYPE_PIN};
                     m_authTypeChoiceIndex = 0;
-
+                    //pop up dialog to let user choose auth type
                     dlg = new AlertDialog.Builder(DevTestActivity.this)
                             .setIcon(R.mipmap.icon_ble)
                             .setTitle("Please Select Sign Type:")
@@ -301,6 +240,7 @@ public class DevTestActivity extends AppCompatActivity {
                     dlg.show();
                     break;
                 case BlueToothWrapper.MSG_GET_USER_PIN:
+                    //pop up dialog to let user input PIN
                     View dlgView = getLayoutInflater().inflate(R.layout.dlg_verify_pin, null);
                     final EditText editPIN = dlgView.findViewById(R.id.edit_pin);
                     editPIN.setText(m_strDefaultPIN);
@@ -357,39 +297,17 @@ public class DevTestActivity extends AppCompatActivity {
                 case BlueToothWrapper.MSG_FREE_CONTEXT_START:
                 case BlueToothWrapper.MSG_IMPORT_MNE_START:
                 case BlueToothWrapper.MSG_CLEAR_SCREEN_START:
-                case BlueToothWrapper.MSG_GET_CHECK_CODE_START:
-                case BlueToothWrapper.MSG_CLEAR_COS_START:
-                case BlueToothWrapper.MSG_RECOVER_SEED_START:
-                case BlueToothWrapper.MSG_RECOVER_ADDRESS_START:
-                case BlueToothWrapper.MSG_SET_IMAGE_DATA_START:
-                case BlueToothWrapper.MSG_SHOW_IMAGE_START:
-                case BlueToothWrapper.MSG_SET_IMAGE_NAME_START:
-                case BlueToothWrapper.MSG_GET_IMAGE_NAME_START:
-                case BlueToothWrapper.MSG_SET_LOGO_IMAGE_START:
-                case BlueToothWrapper.MSG_GET_IMAGE_COUNT_START:
                 case BlueToothWrapper.MSG_EOS_SERIALIZE_START:
-                case BlueToothWrapper.MSG_PRODUCT_TEST_FP_START:
-                case BlueToothWrapper.MSG_PRODUCT_TEST_SCREEN_START:
-                case BlueToothWrapper.MSG_UPDATE_COS_START:
-                case BlueToothWrapper.MSG_GET_FW_VERSION_START:
                     //resEdit.clear();
                     //m_lineIndex = 0;
                     resEdit.append("\n===============================");
                     resEdit.append("\n");
                     resEdit.append("[" + m_lineIndex + "]");
-                    if (MainActivity.TOOL_TYPE_CURRENT == MainActivity.TOOL_TYPE_DEMO) {
-                        resEdit.append(getProcessName(msg.what) + " Start");
-                    } else if (MainActivity.TOOL_TYPE_CURRENT == MainActivity.TOOL_TYPE_PRODUCT_TEST) {
-                        resEdit.append(getProcessName(msg.what) + " 开始");
-                    }
-                    if (msg.what == BlueToothWrapper.MSG_UPDATE_COS_START) {
-                        m_progBar.setVisibility(View.VISIBLE);
-                    }
+                    resEdit.append(getProcessName(msg.what) + " Start");
                     break;
                 case BlueToothWrapper.MSG_SIGN_UPDATE:
                 case BlueToothWrapper.MSG_VERIFYFP_UPDATE:
                 case BlueToothWrapper.MSG_ENROLL_UPDATE:
-                case BlueToothWrapper.MSG_INIT_PIN_UPDATE:
                     m_lineIndex = (m_lineIndex + 1) % 1000000;
                     resEdit.append("\n");
                     resEdit.append("[" + m_lineIndex + "]");
@@ -414,21 +332,7 @@ public class DevTestActivity extends AppCompatActivity {
                 case BlueToothWrapper.MSG_ETH_SIGN_FINISH:
                 case BlueToothWrapper.MSG_CYB_SIGN_FINISH:
                 case BlueToothWrapper.MSG_CLEAR_SCREEN_FINISH:
-                case BlueToothWrapper.MSG_GET_CHECK_CODE_FINISH:
-                case BlueToothWrapper.MSG_CLEAR_COS_FINISH:
-                case BlueToothWrapper.MSG_RECOVER_SEED_FINISH:
-                case BlueToothWrapper.MSG_RECOVER_ADDRESS_FINISH:
-                case BlueToothWrapper.MSG_SET_IMAGE_DATA_FINISH:
-                case BlueToothWrapper.MSG_SHOW_IMAGE_FINISH:
-                case BlueToothWrapper.MSG_SET_IMAGE_NAME_FINISH:
-                case BlueToothWrapper.MSG_GET_IMAGE_NAME_FINISH:
-                case BlueToothWrapper.MSG_SET_LOGO_IMAGE_FINISH:
-                case BlueToothWrapper.MSG_GET_IMAGE_COUNT_FINISH:
                 case BlueToothWrapper.MSG_EOS_SERIALIZE_FINISH:
-                //case BlueToothWrapper.MSG_PRODUCT_TEST_FP_FINISH:
-                case BlueToothWrapper.MSG_PRODUCT_TEST_SCREEN_FINISH:
-                case BlueToothWrapper.MSG_UPDATE_COS_FINISH:
-                case BlueToothWrapper.MSG_GET_FW_VERSION_FINISH:
                     m_lineIndex = (m_lineIndex + 1) % 1000000;
                     resEdit.append("\n");
                     resEdit.append("[" + m_lineIndex + "]");
@@ -496,72 +400,18 @@ public class DevTestActivity extends AppCompatActivity {
                                 resEdit.append("\nSignature Value: " + strSignature);
                             }
                             resEdit.append("\nReturn Value: " + MiddlewareInterface.getReturnString(returnValue.getReturnValue()));
-                        } else if (msg.what == BlueToothWrapper.MSG_GET_CHECK_CODE_FINISH) {
-                            BlueToothWrapper.GetCheckCodeReturnValue returnValue = (BlueToothWrapper.GetCheckCodeReturnValue)msg.obj;
-                            if (returnValue.getReturnValue() == MiddlewareInterface.PAEW_RET_SUCCESS) {
-                                String strCheckCode = CommonUtility.byte2hex(returnValue.getCheckCode());
-                                resEdit.append("\nCheckCode Value: " + strCheckCode);
-                            }
-                            resEdit.append("\nReturn Value: " + MiddlewareInterface.getReturnString(returnValue.getReturnValue()));
-                        } else if (msg.what == BlueToothWrapper.MSG_RECOVER_SEED_FINISH) {
-                            BlueToothWrapper.RecoverSeedReturnValue returnValue = (BlueToothWrapper.RecoverSeedReturnValue)msg.obj;
-                            if (returnValue.getReturnValue() == MiddlewareInterface.PAEW_RET_SUCCESS) {
-                                String strSeedData = CommonUtility.byte2hex(returnValue.getSeedData());
-                                resEdit.append("\nSeed Data: " + strSeedData);
-                            }
-                            resEdit.append("\nReturn Value: " + MiddlewareInterface.getReturnString(returnValue.getReturnValue()));
-                        } else if (msg.what == BlueToothWrapper.MSG_RECOVER_ADDRESS_FINISH) {
-                            BlueToothWrapper.RecoverAddressReturnValue returnValue = (BlueToothWrapper.RecoverAddressReturnValue)msg.obj;
-                            if (returnValue.getReturnValue() == MiddlewareInterface.PAEW_RET_SUCCESS) {
-                                String strPrivateKey = CommonUtility.byte2hex(returnValue.getPrivateKey());
-                                String strAddress = new String(returnValue.getTradeAddress());
-                                resEdit.append("\nPrivate Key: " + strPrivateKey);
-                                resEdit.append("\nAddress: " + strAddress);
-                            }
-                            resEdit.append("\nReturn Value: " + MiddlewareInterface.getReturnString(returnValue.getReturnValue()));
-                        } else if (msg.what == BlueToothWrapper.MSG_GET_IMAGE_NAME_FINISH) {
-                            BlueToothWrapper.GetImageNameReturnValue returnValue = (BlueToothWrapper.GetImageNameReturnValue)msg.obj;
-                            if (returnValue.getReturnValue() == MiddlewareInterface.PAEW_RET_SUCCESS) {
-                                String strImageName = returnValue.getImageName();
-                                resEdit.append("\nImage Name: " + strImageName);
-                            }
-                            resEdit.append("\nReturn Value: " + MiddlewareInterface.getReturnString(returnValue.getReturnValue()));
-                        } else if (msg.what == BlueToothWrapper.MSG_GET_IMAGE_COUNT_FINISH) {
-                            BlueToothWrapper.GetImageCountReturnValue returnValue = (BlueToothWrapper.GetImageCountReturnValue)msg.obj;
-                            if (returnValue.getReturnValue() == MiddlewareInterface.PAEW_RET_SUCCESS) {
-                                resEdit.append("\nImage Name: " + returnValue.getImageCount());
-                            }
-                            resEdit.append("\nReturn Value: " + MiddlewareInterface.getReturnString(returnValue.getReturnValue()));
                         } else if (msg.what == BlueToothWrapper.MSG_EOS_SERIALIZE_FINISH) {
                             BlueToothWrapper.EOSTxSerializeReturn returnValue = (BlueToothWrapper.EOSTxSerializeReturn)msg.obj;
                             if (returnValue.getReturnValue() == MiddlewareInterface.PAEW_RET_SUCCESS) {
                                 resEdit.append("\nSerialize Result: " + CommonUtility.byte2hex(returnValue.getSerializeData()));
                             }
                             resEdit.append("\nReturn Value: " + MiddlewareInterface.getReturnString(returnValue.getReturnValue()));
-                        } else if (msg.what == BlueToothWrapper.MSG_GET_FW_VERSION_FINISH) {
-                            BlueToothWrapper.GetFWVersionReturnValue returnValue = (BlueToothWrapper.GetFWVersionReturnValue)msg.obj;
-                            if (returnValue.getReturnValue() == MiddlewareInterface.PAEW_RET_SUCCESS) {
-                                resEdit.append("\nFW Version: \n" + returnValue.getFWVersion().toString());
-                            }
-                            resEdit.append("\nReturn Value: " + MiddlewareInterface.getReturnString(returnValue.getReturnValue()));
                         }
                     } else {
-                        if (MainActivity.TOOL_TYPE_CURRENT == MainActivity.TOOL_TYPE_DEMO) {
-                            resEdit.append("\nReturn Value: " + MiddlewareInterface.getReturnString(msg.arg1));
-                        } else if (MainActivity.TOOL_TYPE_CURRENT == MainActivity.TOOL_TYPE_PRODUCT_TEST) {
-                            resEdit.append("\n返回值：" + MiddlewareInterface.getReturnString(msg.arg1));
-                        }
+                        resEdit.append("\nReturn Value: " + MiddlewareInterface.getReturnString(msg.arg1));
                     }
 
-                    if (MainActivity.TOOL_TYPE_CURRENT == MainActivity.TOOL_TYPE_DEMO) {
-                        resEdit.append("\n" + getProcessName(msg.what) + " Finish");
-                    } else if (MainActivity.TOOL_TYPE_CURRENT == MainActivity.TOOL_TYPE_PRODUCT_TEST) {
-                        resEdit.append("\n" + getProcessName(msg.what) + " 结束");
-                    }
-
-                    if (msg.what == BlueToothWrapper.MSG_UPDATE_COS_FINISH) {
-                        m_progBar.setVisibility(View.GONE);
-                    }
+                    resEdit.append("\n" + getProcessName(msg.what) + " Finish");
 
                     if (msg.what == BlueToothWrapper.MSG_FREE_CONTEXT_FINISH) {
                         DevTestActivity.this.finish();
@@ -585,27 +435,6 @@ public class DevTestActivity extends AppCompatActivity {
                         m_textDevConnect.setText("Disconnected");
                         m_textDevState.setText(getResources().getString(R.string.text_dev_state));
                     }
-                    break;
-                case BlueToothWrapper.MSG_PRODUCT_TEST_FP_UPDATE:
-                    m_lineIndex = (m_lineIndex + 1) % 1000000;
-                    resEdit.append("\n");
-                    resEdit.append("[" + m_lineIndex + "]");
-                    if (msg.arg1 == MiddlewareInterface.PAEW_RET_DEV_FP_GOOG_FINGER) {
-                        resEdit.append("指纹测试成功");
-                    } else if (msg.arg1 == MiddlewareInterface.PAEW_RET_DEV_WAITING) {
-                        resEdit.append("请按压指纹传感器");
-                    } else {
-                        resEdit.append(MiddlewareInterface.getReturnString(msg.arg1));
-                    }
-                    break;
-                case BlueToothWrapper.MSG_UPDATE_COS_UPDATE:
-                    if (msg.obj != null) {
-                        m_lineIndex = (m_lineIndex + 1) % 1000000;
-                        resEdit.append("\n");
-                        resEdit.append("[" + m_lineIndex + "]");
-                        resEdit.append((String)msg.obj);
-                    }
-                    m_progBar.setProgress(msg.arg2); //arg1 suppose to used as return value
                     break;
             }
         }
@@ -904,140 +733,11 @@ public class DevTestActivity extends AppCompatActivity {
                     }
                 }
             });
-
-            curButton = curView.findViewById(R.id.btn_clearCOS);
-            curButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    AlertDialog dlg = new AlertDialog.Builder(m_curContext)
-                            .setIcon(R.mipmap.icon_ble)
-                            .setTitle("Do You REALLY Want to Clear COS?")
-                            .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                }
-                            })
-                            .setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                    if ((m_testThread == null) || (m_testThread.getState() == Thread.State.TERMINATED))
-                                    {
-                                        m_testThread = new BlueToothWrapper(m_mainHandler);
-                                        ((BlueToothWrapper)m_testThread).setClearCOSWrapper(m_contextHandle, m_devIndex);
-                                        m_testThread.start();
-                                    }
-                                    else
-                                    {
-                                        Toast toast = Toast.makeText(m_curContext, "Test Still Running", Toast.LENGTH_SHORT);
-                                        toast.setGravity(Gravity.CENTER, 0, 0);
-                                        toast.show();
-                                    }
-                                }
-                            })
-                            .setCancelable(false)
-                            .create();
-                    dlg.show();
-                }
-            });
-
-            curButton = curView.findViewById(R.id.btn_update_cos);
-            curButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    AlertDialog dlg = new AlertDialog.Builder(m_curContext)
-                            .setIcon(R.mipmap.icon_ble)
-                            .setTitle("Restart Update COS Procedure?")
-                            .setNegativeButton("No", new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                    m_bUpdateCOSRestart = false;
-
-                                    Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-                                    intent.setType("*/*"); //any type
-                                    intent.addCategory(Intent.CATEGORY_OPENABLE);
-                                    startActivityForResult(Intent.createChooser(intent, "Select COS File to Update"), COS_FILE_SELECT_CODE);
-                                }
-                            })
-                            .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                    m_bUpdateCOSRestart = true;
-
-                                    Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-                                    intent.setType("*/*"); //any type
-                                    intent.addCategory(Intent.CATEGORY_OPENABLE);
-                                    startActivityForResult(Intent.createChooser(intent, "Select COS File to Update"), COS_FILE_SELECT_CODE);
-                                }
-                            })
-                            .setCancelable(false)
-                            .create();
-                    dlg.show();
-                }
-            });
-
-            curButton = curView.findViewById(R.id.btn_get_fw_version);
-            curButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    if ((m_testThread == null) || (m_testThread.getState() == Thread.State.TERMINATED))
-                    {
-                        m_testThread = new BlueToothWrapper(m_mainHandler);
-                        ((BlueToothWrapper)m_testThread).setGetFWVersionWrapper(m_contextHandle, m_devIndex);
-                        m_testThread.start();
-                    }
-                    else
-                    {
-                        Toast toast = Toast.makeText(m_curContext, "Test Still Running", Toast.LENGTH_SHORT);
-                        toast.setGravity(Gravity.CENTER, 0, 0);
-                        toast.show();
-                    }
-                }
-            });
         }
 
         @Override
         public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
             super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        }
-
-        @Override
-        public void onActivityResult(int requestCode, int resultCode, Intent data) {
-            if (resultCode == Activity.RESULT_OK) {
-                if (requestCode == COS_FILE_SELECT_CODE) {
-                    Uri uri = data.getData();
-                    String filePath = FilePathResolver.getPath(m_curContext, uri);
-                    File filterFile = new File(filePath);
-                    byte[] fileData = null;
-
-                    if ((m_testThread == null) || (m_testThread.getState() == Thread.State.TERMINATED)) {
-                        try{
-                            byte[] bufferData = new byte[1024];
-                            int dataLen = 0;// 一次读取1024字节大小，没有数据后返回-1.
-
-                            FileInputStream fis = new FileInputStream(filterFile);
-                            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                            while ((dataLen = fis.read(bufferData)) != -1) {
-                                baos.write(bufferData, 0, dataLen);
-                            }
-                            fileData = baos.toByteArray();
-                            baos.close();
-                            fis.close();
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                        if (fileData != null) {
-                            m_testThread = new BlueToothWrapper(m_mainHandler);
-                            ((BlueToothWrapper)m_testThread).setUpdateCOSWrapper(m_contextHandle, m_devIndex, m_bUpdateCOSRestart, fileData);
-                            m_testThread.start();
-                        }
-                    } else {
-                        Toast toast = Toast.makeText(m_curContext, "Test Still Running", Toast.LENGTH_SHORT);
-                        toast.setGravity(Gravity.CENTER, 0, 0);
-                        toast.show();
-                    }
-                }
-            }
-            super.onActivityResult(requestCode, resultCode, data);
         }
     }
 
@@ -1229,253 +929,6 @@ public class DevTestActivity extends AppCompatActivity {
                     }
                 }
             });
-
-            curButton = curView.findViewById(R.id.btn_import_image);
-            curButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    final byte imageIndex = (byte)1;
-
-                    m_imageChoiceIndex = 0;
-
-                    if ((m_testThread == null) || (m_testThread.getState() == Thread.State.TERMINATED))
-                    {
-                        AlertDialog dlg = new AlertDialog.Builder(m_curContext)
-                                .setIcon(R.mipmap.icon_ble)
-                                .setTitle("Please Select Image:")
-                                .setSingleChoiceItems(m_imageSelectString, m_imageChoiceIndex, new DialogInterface.OnClickListener() {
-                                    @Override
-                                    public void onClick(DialogInterface dialog, int which) {
-                                        m_imageChoiceIndex = which;
-                                    }
-                                })
-                                .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                                    @Override
-                                    public void onClick(DialogInterface dialog, int which) {
-                                    }
-                                })
-                                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                                    @Override
-                                    public void onClick(DialogInterface dialog, int which) {
-                                        if ((m_testThread == null) || (m_testThread.getState() == Thread.State.TERMINATED))
-                                        {
-                                            m_testThread = new BlueToothWrapper(m_mainHandler);
-                                            ((BlueToothWrapper)m_testThread).setSetImageData(m_contextHandle, m_devIndex, imageIndex, m_imageData[m_imageChoiceIndex], m_nImageWidth, m_nImageHeight);
-                                            m_testThread.start();
-                                        }
-                                        else
-                                        {
-                                            Toast toast = Toast.makeText(m_curContext, "Test Still Running", Toast.LENGTH_SHORT);
-                                            toast.setGravity(Gravity.CENTER, 0, 0);
-                                            toast.show();
-                                        }
-                                    }
-                                })
-                                .setCancelable(false)
-                                .create();
-                        dlg.show();
-                    }
-                    else
-                    {
-                        Toast toast = Toast.makeText(m_curContext, "Test Still Running", Toast.LENGTH_SHORT);
-                        toast.setGravity(Gravity.CENTER, 0, 0);
-                        toast.show();
-                    }
-                }
-            });
-
-            curButton = curView.findViewById(R.id.btn_clear_image);
-            curButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    final byte imageIndex = (byte)1;
-                    if ((m_testThread == null) || (m_testThread.getState() == Thread.State.TERMINATED))
-                    {
-                        m_testThread = new BlueToothWrapper(m_mainHandler);
-                        ((BlueToothWrapper)m_testThread).setSetImageData(m_contextHandle, m_devIndex, imageIndex, m_imageData_white, m_nImageWidth, m_nImageHeight);
-                        m_testThread.start();
-                    }
-                    else
-                    {
-                        Toast toast = Toast.makeText(m_curContext, "Test Still Running", Toast.LENGTH_SHORT);
-                        toast.setGravity(Gravity.CENTER, 0, 0);
-                        toast.show();
-                    }
-                }
-            });
-
-            curButton = curView.findViewById(R.id.btn_show_image);
-            curButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    final byte imageIndex = (byte)1;
-                    if ((m_testThread == null) || (m_testThread.getState() == Thread.State.TERMINATED))
-                    {
-                        m_testThread = new BlueToothWrapper(m_mainHandler);
-                        ((BlueToothWrapper)m_testThread).setShowImageWrapper(m_contextHandle, m_devIndex, imageIndex, MiddlewareInterface.PAEW_LCD_CLEAR_SHOW_LOGO);
-                        m_testThread.start();
-                    }
-                    else
-                    {
-                        Toast toast = Toast.makeText(m_curContext, "Test Still Running", Toast.LENGTH_SHORT);
-                        toast.setGravity(Gravity.CENTER, 0, 0);
-                        toast.show();
-                    }
-                }
-            });
-
-            curButton = curView.findViewById(R.id.btn_show_image0);
-            curButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    final byte imageIndex = (byte)0;
-                    if ((m_testThread == null) || (m_testThread.getState() == Thread.State.TERMINATED))
-                    {
-                        m_testThread = new BlueToothWrapper(m_mainHandler);
-                        ((BlueToothWrapper)m_testThread).setShowImageWrapper(m_contextHandle, m_devIndex, imageIndex, MiddlewareInterface.PAEW_LCD_CLEAR_SHOW_LOGO);
-                        m_testThread.start();
-                    }
-                    else
-                    {
-                        Toast toast = Toast.makeText(m_curContext, "Test Still Running", Toast.LENGTH_SHORT);
-                        toast.setGravity(Gravity.CENTER, 0, 0);
-                        toast.show();
-                    }
-                }
-            });
-
-            curButton = curView.findViewById(R.id.btn_set_logo);
-            curButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    final byte imageIndex = (byte)1;
-                    if ((m_testThread == null) || (m_testThread.getState() == Thread.State.TERMINATED))
-                    {
-                        m_testThread = new BlueToothWrapper(m_mainHandler);
-                        ((BlueToothWrapper)m_testThread).setSetLogoImageWrapper(m_contextHandle, m_devIndex, imageIndex);
-                        m_testThread.start();
-                    }
-                    else
-                    {
-                        Toast toast = Toast.makeText(m_curContext, "Test Still Running", Toast.LENGTH_SHORT);
-                        toast.setGravity(Gravity.CENTER, 0, 0);
-                        toast.show();
-                    }
-                }
-            });
-
-            curButton = curView.findViewById(R.id.btn_restore_logo);
-            curButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    final byte imageIndex = (byte)0;
-                    if ((m_testThread == null) || (m_testThread.getState() == Thread.State.TERMINATED))
-                    {
-                        m_testThread = new BlueToothWrapper(m_mainHandler);
-                        ((BlueToothWrapper)m_testThread).setSetLogoImageWrapper(m_contextHandle, m_devIndex, imageIndex);
-                        m_testThread.start();
-                    }
-                    else
-                    {
-                        Toast toast = Toast.makeText(m_curContext, "Test Still Running", Toast.LENGTH_SHORT);
-                        toast.setGravity(Gravity.CENTER, 0, 0);
-                        toast.show();
-                    }
-                }
-            });
-
-            curButton = curView.findViewById(R.id.btn_set_image_name);
-            curButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    if ((m_testThread == null) || (m_testThread.getState() == Thread.State.TERMINATED))
-                    {
-                        View dlgView = getLayoutInflater().inflate(R.layout.dlg_input_image_name, null);
-                        final EditText editImageName = dlgView.findViewById(R.id.edit_image_name);
-                        AlertDialog dlg = new AlertDialog.Builder(m_curContext)
-                                .setIcon(R.mipmap.icon_ble)
-                                .setTitle("Please Input Image Name:")
-                                .setView(dlgView).setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                                    @Override
-                                    public void onClick(DialogInterface dialog, int which) {
-                                    }
-                                })
-                                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                                    @Override
-                                    public void onClick(DialogInterface dialog, int which) {
-                                        int imageNameLen = editImageName.getText().toString().length();
-                                        if (imageNameLen > MiddlewareInterface.PAEW_IMAGE_NAME_MAX_LEN) {
-                                            Toast toast = Toast.makeText(m_curContext, "Please input image name less than " + MiddlewareInterface.PAEW_IMAGE_NAME_MAX_LEN, Toast.LENGTH_SHORT);
-                                            toast.setGravity(Gravity.CENTER, 0, 0);
-                                            toast.show();
-                                            return;
-                                        }
-                                        final byte imageIndex = (byte)1;
-                                        if ((m_testThread == null) || (m_testThread.getState() == Thread.State.TERMINATED))
-                                        {
-                                            m_testThread = new BlueToothWrapper(m_mainHandler);
-                                            ((BlueToothWrapper)m_testThread).setSetImageNameWrapper(m_contextHandle, m_devIndex, imageIndex, editImageName.getText().toString());
-                                            m_testThread.start();
-                                        }
-                                        else
-                                        {
-                                            Toast toast = Toast.makeText(m_curContext, "Test Still Running", Toast.LENGTH_SHORT);
-                                            toast.setGravity(Gravity.CENTER, 0, 0);
-                                            toast.show();
-                                        }
-                                    }
-                                })
-                                .setCancelable(false)
-                                .create();
-                        dlg.show();
-                    }
-                    else
-                    {
-                        Toast toast = Toast.makeText(m_curContext, "Test Still Running", Toast.LENGTH_SHORT);
-                        toast.setGravity(Gravity.CENTER, 0, 0);
-                        toast.show();
-                    }
-                }
-            });
-
-            curButton = curView.findViewById(R.id.btn_get_image_name);
-            curButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    final byte imageIndex = (byte)1;
-                    if ((m_testThread == null) || (m_testThread.getState() == Thread.State.TERMINATED))
-                    {
-                        m_testThread = new BlueToothWrapper(m_mainHandler);
-                        ((BlueToothWrapper)m_testThread).setGetImageNameWrapper(m_contextHandle, m_devIndex, imageIndex);
-                        m_testThread.start();
-                    }
-                    else
-                    {
-                        Toast toast = Toast.makeText(m_curContext, "Test Still Running", Toast.LENGTH_SHORT);
-                        toast.setGravity(Gravity.CENTER, 0, 0);
-                        toast.show();
-                    }
-                }
-            });
-
-            curButton = curView.findViewById(R.id.btn_get_image_count);
-            curButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    if ((m_testThread == null) || (m_testThread.getState() == Thread.State.TERMINATED))
-                    {
-                        m_testThread = new BlueToothWrapper(m_mainHandler);
-                        ((BlueToothWrapper)m_testThread).setGetImageCountWrapper(m_contextHandle, m_devIndex);
-                        m_testThread.start();
-                    }
-                    else
-                    {
-                        Toast toast = Toast.makeText(m_curContext, "Test Still Running", Toast.LENGTH_SHORT);
-                        toast.setGravity(Gravity.CENTER, 0, 0);
-                        toast.show();
-                    }
-                }
-            });
         }
     }
 
@@ -1638,233 +1091,17 @@ public class DevTestActivity extends AppCompatActivity {
                 }
             });
 
-            curButton = curView.findViewById(R.id.btn_get_checkcode);
-            curButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    if ((m_testThread == null) || (m_testThread.getState() == Thread.State.TERMINATED))
-                    {
-                        m_testThread = new BlueToothWrapper(m_mainHandler);
-                        ((BlueToothWrapper)m_testThread).setGetCheckCodeWrapper(m_contextHandle, m_devIndex);
-                        m_testThread.start();
-                    }
-                    else
-                    {
-                        Toast toast = Toast.makeText(m_curContext, "Test Still Running", Toast.LENGTH_SHORT);
-                        toast.setGravity(Gravity.CENTER, 0, 0);
-                        toast.show();
-                    }
-                }
-            });
-
-            curButton = curView.findViewById(R.id.btn_mne2seed);
-            curButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    if ((m_testThread == null) || (m_testThread.getState() == Thread.State.TERMINATED))
-                    {
-                        View dlgView = getLayoutInflater().inflate(R.layout.dlg_input_mnes, null);
-                        final EditText editMnes = dlgView.findViewById(R.id.edit_mnes);
-                        editMnes.setText(m_strDefaultMnes);
-                        editMnes.selectAll();
-                        AlertDialog dlg = new AlertDialog.Builder(m_curContext)
-                                .setIcon(R.mipmap.icon_ble)
-                                .setTitle("Please Input Mnemonics:")
-                                .setView(dlgView).setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                                    @Override
-                                    public void onClick(DialogInterface dialog, int which) {
-                                    }
-                                })
-                                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                                    @Override
-                                    public void onClick(DialogInterface dialog, int which) {
-                                        if ((m_testThread == null) || (m_testThread.getState() == Thread.State.TERMINATED))
-                                        {
-                                            m_testThread = new BlueToothWrapper(m_mainHandler);
-                                            ((BlueToothWrapper)m_testThread).setRecoverSeedWrapper(editMnes.getText().toString());
-                                            m_testThread.start();
-                                        }
-                                        else
-                                        {
-                                            Toast toast = Toast.makeText(m_curContext, "Test Still Running", Toast.LENGTH_SHORT);
-                                            toast.setGravity(Gravity.CENTER, 0, 0);
-                                            toast.show();
-                                        }
-                                    }
-                                })
-                                .setCancelable(false)
-                                .create();
-                        dlg.show();
-                    }
-                    else
-                    {
-                        Toast toast = Toast.makeText(m_curContext, "Test Still Running", Toast.LENGTH_SHORT);
-                        toast.setGravity(Gravity.CENTER, 0, 0);
-                        toast.show();
-                    }
-                }
-            });
-
-            curButton = curView.findViewById(R.id.btn_seed2addr);
-            curButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    if ((m_testThread == null) || (m_testThread.getState() == Thread.State.TERMINATED))
-                    {
-                        View dlgView = getLayoutInflater().inflate(R.layout.dlg_input_seed, null);
-                        final EditText editSeed = dlgView.findViewById(R.id.edit_seed);
-                        editSeed.setText(CommonUtility.byte2hex(m_defaultSeed));
-                        editSeed.selectAll();
-                        AlertDialog dlg = new AlertDialog.Builder(m_curContext)
-                                .setIcon(R.mipmap.icon_ble)
-                                .setTitle("Please Input Mnemonics:")
-                                .setView(dlgView).setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                                    @Override
-                                    public void onClick(DialogInterface dialog, int which) {
-                                    }
-                                })
-                                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                                    @Override
-                                    public void onClick(DialogInterface dialog, int which) {
-                                        final byte coinType = MiddlewareInterface.PAEW_COIN_TYPE_EOS;
-                                        final int[] derivePath = {0, 0x8000002C, 0x800000c2, 0x80000000, 0x00000000, 0x00000000};
-                                        m_coinChoiceIndex = 0;
-                                        if ((m_testThread == null) || (m_testThread.getState() == Thread.State.TERMINATED))
-                                        {
-                                            m_testThread = new BlueToothWrapper(m_mainHandler);
-                                            ((BlueToothWrapper)m_testThread).setRecoverAddressWrapper(coinType, CommonUtility.hexStringToUnsignByte(editSeed.getText().toString()), derivePath);
-                                            m_testThread.start();
-                                        }
-                                        else
-                                        {
-                                            Toast toast = Toast.makeText(m_curContext, "Test Still Running", Toast.LENGTH_SHORT);
-                                            toast.setGravity(Gravity.CENTER, 0, 0);
-                                            toast.show();
-                                        }
-                                    }
-                                })
-                                .setCancelable(false)
-                                .create();
-                        dlg.show();
-                    }
-                    else
-                    {
-                        Toast toast = Toast.makeText(m_curContext, "Test Still Running", Toast.LENGTH_SHORT);
-                        toast.setGravity(Gravity.CENTER, 0, 0);
-                        toast.show();
-                    }
-                }
-            });
-
             curButton = curView.findViewById(R.id.btn_eos_serialize);
             curButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
+                    //NOTE: ref_block_prefix field must wrapped by quotation marks
                     String jsonTxString = "{\"expiration\":\"2018-05-16T02:49:35\",\"ref_block_num\":4105,\"ref_block_prefix\":\"2642943355\",\"max_net_usage_words\":0,\"max_cpu_usage_ms\":0,\"delay_sec\":0,\"context_free_actions\":[],\"actions\":[{\"account\":\"eosio\",\"name\":\"newaccount\",\"authorization\":[{\"actor\":\"eosio\",\"permission\":\"active\"}],\"data\":\"0000000000ea30550000000000000e3d01000000010003224c02ca019e9c0c969d2c8006b89275abeeb5b05af68f2cf5f497bd6e1aff6d01000000010000000100038d424cbe81564f1e4338d342a4dc2b70d848d8b026d3f783bc7c8e6c3c6733cf01000000\"}],\"transaction_extensions\":[],\"signatures\":[],\"context_free_data\":[]}";
                     if ((m_abortThread == null) || (m_abortThread.getState() == Thread.State.TERMINATED))
                     {
                         m_abortThread = new BlueToothWrapper(m_mainHandler);
                         ((BlueToothWrapper)m_abortThread).setEOSTxSerializeWrapper(jsonTxString);
                         m_abortThread.start();
-                    }
-                    else
-                    {
-                        Toast toast = Toast.makeText(m_curContext, "Test Still Running", Toast.LENGTH_SHORT);
-                        toast.setGravity(Gravity.CENTER, 0, 0);
-                        toast.show();
-                    }
-                }
-            });
-        }
-    }
-
-    public static class ProductTestFragment extends Fragment {
-        public ProductTestFragment() {
-        }
-
-        @Nullable
-        @Override
-        public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-            View viewRet = inflater.inflate(R.layout.fragment_product_test, container, false);
-
-            initClickListener(viewRet);
-
-            return viewRet;
-        }
-
-        void initClickListener(View curView) {
-            Button curButton;
-
-            curButton = curView.findViewById(R.id.btn_enrollfp);
-            curButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    if ((m_testThread == null) || (m_testThread.getState() == Thread.State.TERMINATED))
-                    {
-                        m_testThread = new BlueToothWrapper(m_mainHandler);
-                        ((BlueToothWrapper)m_testThread).setProductTestFPWrapper(m_contextHandle, m_devIndex);
-                        m_testThread.start();
-                    }
-                    else
-                    {
-                        Toast toast = Toast.makeText(m_curContext, "Test Still Running", Toast.LENGTH_SHORT);
-                        toast.setGravity(Gravity.CENTER, 0, 0);
-                        toast.show();
-                    }
-                }
-            });
-
-            curButton = curView.findViewById(R.id.btn_show_image0);
-            curButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    final byte imageIndex = (byte)0;
-                    if ((m_testThread == null) || (m_testThread.getState() == Thread.State.TERMINATED))
-                    {
-                        m_testThread = new BlueToothWrapper(m_mainHandler);
-                        ((BlueToothWrapper)m_testThread).setProductTestScreenWrapper(m_contextHandle, m_devIndex, imageIndex, MiddlewareInterface.PAEW_LCD_CLEAR_SHOW_LOGO);
-                        m_testThread.start();
-                    }
-                    else
-                    {
-                        Toast toast = Toast.makeText(m_curContext, "Test Still Running", Toast.LENGTH_SHORT);
-                        toast.setGravity(Gravity.CENTER, 0, 0);
-                        toast.show();
-                    }
-                }
-            });
-
-            curButton = curView.findViewById(R.id.btn_calibrate);
-            curButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    if ((m_testThread == null) || (m_testThread.getState() == Thread.State.TERMINATED))
-                    {
-                        m_testThread = new BlueToothWrapper(m_mainHandler);
-                        ((BlueToothWrapper)m_testThread).setCalibrateFPWrapper(m_contextHandle, m_devIndex);
-                        m_testThread.start();
-                    }
-                    else
-                    {
-                        Toast toast = Toast.makeText(m_curContext, "Test Still Running", Toast.LENGTH_SHORT);
-                        toast.setGravity(Gravity.CENTER, 0, 0);
-                        toast.show();
-                    }
-                }
-            });
-
-            curButton = curView.findViewById(R.id.btn_freeContextAndShutDown);
-            curButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    if ((m_freeContextThread == null) || (m_freeContextThread.getState() == Thread.State.TERMINATED))
-                    {
-                        m_freeContextThread = new BlueToothWrapper(m_mainHandler);
-                        ((BlueToothWrapper)m_freeContextThread).setFreeContextAndShutDownWrapper(m_contextHandle);
-                        m_freeContextThread.start();
-
-                        m_contextHandle = 0;
-                        m_devIndex = MiddlewareInterface.INVALID_DEV_INDEX;
                     }
                     else
                     {
@@ -1909,27 +1146,19 @@ public class DevTestActivity extends AppCompatActivity {
 
         //init fragments
         m_fragList = new ArrayList<>(0);
-        if (MainActivity.TOOL_TYPE_CURRENT == MainActivity.TOOL_TYPE_DEMO) {
-            m_fragList.add(new DeviceTestFragment());
-            m_fragList.add(new FingerPrintTestFragment());
-            m_fragList.add(new InitWalletTestFragment());
-            m_fragList.add(new WalletTestFragment());
-        } else if (MainActivity.TOOL_TYPE_CURRENT == MainActivity.TOOL_TYPE_PRODUCT_TEST) {
-            m_fragList.add(new ProductTestFragment());
-        }
+        m_fragList.add(new DeviceTestFragment());
+        m_fragList.add(new FingerPrintTestFragment());
+        m_fragList.add(new InitWalletTestFragment());
+        m_fragList.add(new WalletTestFragment());
 
         //!!!!!must do it!!!!!!
         m_viewPager.getAdapter().notifyDataSetChanged();
 
         m_tabTests = findViewById(R.id.test_tab);
-        if (MainActivity.TOOL_TYPE_CURRENT == MainActivity.TOOL_TYPE_DEMO) {
-            m_tabTests.addTab(m_tabTests.newTab().setText(R.string.tab_item_device).setTag(TAB_DEVICE));
-            m_tabTests.addTab(m_tabTests.newTab().setText(R.string.tab_item_fp).setTag(TAB_FINGERPRINT));
-            m_tabTests.addTab(m_tabTests.newTab().setText(R.string.tab_item_init).setTag(TAB_INIT_WALLET));
-            m_tabTests.addTab(m_tabTests.newTab().setText(R.string.tab_item_wallet).setTag(TAB_WALLET));
-        } else if (MainActivity.TOOL_TYPE_CURRENT == MainActivity.TOOL_TYPE_PRODUCT_TEST) {
-            m_tabTests.addTab(m_tabTests.newTab().setText(R.string.tab_item_product_test).setTag(TAB_PRODUCT_TEST));
-        }
+        m_tabTests.addTab(m_tabTests.newTab().setText(R.string.tab_item_device).setTag(TAB_DEVICE));
+        m_tabTests.addTab(m_tabTests.newTab().setText(R.string.tab_item_fp).setTag(TAB_FINGERPRINT));
+        m_tabTests.addTab(m_tabTests.newTab().setText(R.string.tab_item_init).setTag(TAB_INIT_WALLET));
+        m_tabTests.addTab(m_tabTests.newTab().setText(R.string.tab_item_wallet).setTag(TAB_WALLET));
 
         m_tabTests.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
             @Override
@@ -1937,27 +1166,19 @@ public class DevTestActivity extends AppCompatActivity {
                 int layout_height = 0;
                 LinearLayout.LayoutParams layoutParams = null;
 
-                if (MainActivity.TOOL_TYPE_CURRENT == MainActivity.TOOL_TYPE_DEMO) {
-                    switch((int)tab.getTag()) {
-                        case TAB_DEVICE:
-                            m_viewPager.setCurrentItem(0);
-                            break;
-                        case TAB_FINGERPRINT:
-                            m_viewPager.setCurrentItem(1);
-                            break;
-                        case TAB_INIT_WALLET:
-                            m_viewPager.setCurrentItem(2);
-                            break;
-                        case TAB_WALLET:
-                            m_viewPager.setCurrentItem(3);
-                            break;
-                    }
-                } else if (MainActivity.TOOL_TYPE_CURRENT == MainActivity.TOOL_TYPE_PRODUCT_TEST) {
-                    switch((int)tab.getTag()) {
-                        case TAB_PRODUCT_TEST:
-                            m_viewPager.setCurrentItem(0);
-                            break;
-                    }
+                switch((int)tab.getTag()) {
+                    case TAB_DEVICE:
+                        m_viewPager.setCurrentItem(0);
+                        break;
+                    case TAB_FINGERPRINT:
+                        m_viewPager.setCurrentItem(1);
+                        break;
+                    case TAB_INIT_WALLET:
+                        m_viewPager.setCurrentItem(2);
+                        break;
+                    case TAB_WALLET:
+                        m_viewPager.setCurrentItem(3);
+                        break;
                 }
             }
 
