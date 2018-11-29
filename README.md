@@ -1,6 +1,7 @@
 
 More details:
 https://github.com/extropiescom/bladeX/wiki
+
 https://github.com/extropiescom/bladeX/wiki/bladeX-Android-API
 
 com.extropies.common.MiddlewareInterface is main interface to interact with the device
