@@ -17,20 +17,43 @@
             android:text="@string/btn_ethsign"
             android:textAllCaps="false" />
         <Button
+            android:id="@+id/btn_erc20sign"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:text="@string/btn_erc20sign"
+            android:textAllCaps="false" />
+    </TableRow>
+    <TableRow android:gravity="center">
+        <Button
             android:id="@+id/btn_eossign"
             android:layout_width="0dp"
             android:layout_weight="1"
             android:layout_height="wrap_content"
             android:text="@string/btn_eossign"
             android:textAllCaps="false" />
-    </TableRow>
-    <TableRow android:gravity="center">
         <Button
             android:id="@+id/btn_cybsign"
             android:layout_width="0dp"
             android:layout_weight="1"
             android:layout_height="wrap_content"
             android:text="@string/btn_cybsign"
+            android:textAllCaps="false" />
+        <Button
+            android:id="@+id/btn_etcsign"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:text="@string/btn_etcsign"
+            android:textAllCaps="false" />
+    </TableRow>
+    <TableRow android:gravity="center">
+        <Button
+            android:id="@+id/btn_btcsign"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:text="@string/btn_btcsign"
             android:textAllCaps="false" />
         <Button
             android:id="@+id/btn_get_checkcode"
@@ -40,11 +63,11 @@
             android:text="@string/btn_get_checkcode"
             android:textAllCaps="false" />
         <Button
-            android:id="@+id/btn_abort"
+            android:id="@+id/btn_abortSign"
             android:layout_width="0dp"
             android:layout_weight="1"
             android:layout_height="wrap_content"
-            android:text="@string/btn_abort"
+            android:text="@string/btn_abortSign"
             android:textAllCaps="false" />
     </TableRow>
     <TableRow>
@@ -68,6 +91,15 @@
             android:layout_weight="1"
             android:layout_height="wrap_content"
             android:text="@string/btn_eos_serialize"
+            android:textAllCaps="false" />
+    </TableRow>
+    <TableRow>
+        <Button
+            android:id="@+id/btn_abortButton"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:text="@string/btn_abortButton"
             android:textAllCaps="false" />
     </TableRow>
 </TableLayout>

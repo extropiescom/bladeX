@@ -6,4 +6,6 @@
     <color name="colorBorder">#CCCCCC</color>
     <color name="colorTextSelected">#FFFFFF</color>
     <color name="colorTextUnselected">#FFFFFF</color>
+    <color name="colorTextSelected2">#2c42a6</color>
+    <color name="colorTextUnselected2">#3e5059</color>
 </resources>

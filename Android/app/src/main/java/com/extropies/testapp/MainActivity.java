@@ -1,88 +1,26 @@
-/**
- * More details:
- * https://github.com/extropiescom/bladeX/wiki
- * https://github.com/extropiescom/bladeX/wiki/bladeX-Android-API
- *
- * com.extropies.common.MiddlewareInterface is main interface to interact with the device
- * NOTE: All the method mentioned here should NOT be called in main thread, or bluetooth
- * communication will be blocked.
- *
- * 1. How to connect and disconnect:
- *    - Invoke MiddlewareInterface.getDeviceList() to get device name list, device names
- *    are in format of "device_name####device_address".
- *    - Use MiddlewareInterface.initContextWithDevName() to connect device, with devName
- *    chosen from MiddlewareInterface.getDeviceList() result.
- *    - User MiddlewareInterface.freeContext() or freeContextAndShutDown() to disconnect
- *    and power down the device.
- * 2. How to initialize device:
- *    - PIN initialize: If MiddlewareInterface.getDevInfo() returns device info with ucPINState == MiddlewareInterace.PAEW_DEV_INFO_PIN_UNSET,
- *    this means PIN haven't been set, and you should call MiddlewareInterface.initPIN() to initialize.
- *    - Seed initialize: If MiddlewareInterface.getDevInfo() returns device info with ucLifeCycle == MiddlewareInterace.PAEW_DEV_INFO_LIFECYCLE_PRODUCE,
- *    this means there're no seed inside device, and you should initialize device first (after device initialization, ucLifeCycle
- *    should be MiddlewareInterface.PAEW_DEV_INFO_LIFECYCLE_USER). Invoke MiddlewareInterface.generateSeed_GetMnes() + MiddlewareInterface.generateSeed_CheckMnes()
- *    to generate new seed, or invoke MiddlewareInterface.importMne() to import mnemonics to import seed.
- * 3. How to get EOS address:
- *    1) Invoke MiddlewareInterface.deriveTradeAddress(contextHandle, 0, PAEW_COIN_TYPE_EOS, derivePath), with
- *    derivePath = {0, 0x8000002C, 0x800000c2, 0x80000000, 0x00000000, 0x00000000} according to https://github.com/satoshilabs/slips/blob/master/slip-0044.md.
- *    2) Invoke MiddlewareInterface.getTradeAddress(contextHandle, 0, PAEW_COIN_TYPE_EOS, bShowOnScreen, strAddress) to get EOS address.
- * 4. How to sign EOS transaction:
- *    1) Invoke MiddlewareInterface.deriveTradeAddress(contextHandle, 0, PAEW_COIN_TYPE_EOS, derivePath), with
- *    derivePath = {0, 0x8000002C, 0x800000c2, 0x80000000, 0x00000000, 0x00000000}; according to https://github.com/satoshilabs/slips/blob/master/slip-0044.md
- *    2) (Optional) Invoke MiddlewareInterface.eos_tx_serialize to serialize json string to binary.
- *    NOTE1: ref_block_prefix field of json object MUST be wrapped by quotation marks ("") if you pass it to MiddlewareInterface.eos_tx_serialize, such as \"2642943355\" in the following.
- *    String jsonTxString = "{\"expiration\":\"2018-05-16T02:49:35\",\"ref_block_num\":4105,\"ref_block_prefix\":\"2642943355\",\"max_net_usage_words\":0,\"max_cpu_usage_ms\":0,\"delay_sec\":0,\"context_free_actions\":[],\"actions\":[{\"account\":\"eosio\",\"name\":\"newaccount\",\"authorization\":[{\"actor\":\"eosio\",\"permission\":\"active\"}],\"data\":\"0000000000ea30550000000000000e3d01000000010003224c02ca019e9c0c969d2c8006b89275abeeb5b05af68f2cf5f497bd6e1aff6d01000000010000000100038d424cbe81564f1e4338d342a4dc2b70d848d8b026d3f783bc7c8e6c3c6733cf01000000\"}],\"transaction_extensions\":[],\"signatures\":[],\"context_free_data\":[]}";
- *    MiddlewareInterface.eos_tx_serialize(jsonTxString, serializeData, serializeDataLen);
- *    NOTE2: serializeData is the binary form of transaction, you should prefix it with 32 bytes of chain_id, and padding with 32 bytes of zeros, then pass it to MiddlewareInterface.EOSSign() to sign.
- *    3) Invoke MiddlewareInterface.EOSSign(contextHandle, 0, signCallback, transaction, signature, sigLen)
- *    test transaction = {(byte)0x74, (byte)0x09, (byte)0x70, (byte)0xd9, (byte)0xff, (byte)0x01, (byte)0xb5, (byte)0x04, (byte)0x63, (byte)0x2f, (byte)0xed, (byte)0xe1, (byte)0xad, (byte)0xc3, (byte)0xdf, (byte)0xe5, (byte)0x59, (byte)0x90, (byte)0x41, (byte)0x5e, (byte)0x4f, (byte)0xde, (byte)0x01, (byte)0xe1, (byte)0xb8, (byte)0xf3, (byte)0x15, (byte)0xf8, (byte)0x13, (byte)0x6f, (byte)0x47, (byte)0x6c, (byte)0x14, (byte)0xc2, (byte)0x67, (byte)0x5b, (byte)0x01, (byte)0x24, (byte)0x5f, (byte)0x70, (byte)0x5d, (byte)0xd7, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x01, (byte)0x00, (byte)0xa6, (byte)0x82, (byte)0x34, (byte)0x03, (byte)0xea, (byte)0x30, (byte)0x55, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x57, (byte)0x2d, (byte)0x3c, (byte)0xcd, (byte)0xcd, (byte)0x01, (byte)0x20, (byte)0x29, (byte)0xc2, (byte)0xca, (byte)0x55, (byte)0x7a, (byte)0x73, (byte)0x57, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0xa8, (byte)0xed, (byte)0x32, (byte)0x32, (byte)0x21, (byte)0x20, (byte)0x29, (byte)0xc2, (byte)0xca, (byte)0x55, (byte)0x7a, (byte)0x73, (byte)0x57, (byte)0x90, (byte)0x55, (byte)0x8c, (byte)0x86, (byte)0x77, (byte)0x95, (byte)0x4c, (byte)0x3c, (byte)0x10, (byte)0x27, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x04, (byte)0x45, (byte)0x4f, (byte)0x53, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00}
- *    this transaction is serialized result of a json transaction string, prefixed with chain_id (32 bytes) and tailed with zeros (32 bytes)
- * 5. Sign Callbacks
- *    Sign callbacks are invoked in the following sequence
- *    1) Invoke getAuthResult(), return PAEW_RET_SUCCESS or PAEW_RET_DEV_OP_CANCEL, indicates user chooses OK or Cancel on UI. If returns PAEW_RET_SUCCESS, signature will go on; if returns PAEW_RET_DEV_OP_CANCEL, you should call abort() to end this sign procedure.
- *    2) Invoke getAuthType(), return PAEW_SIGN_AUTH_TYPE_PIN or PAEW_SIGN_AUTH_TYPE_FP.
- *    3) If getAuthType() returns PAEW_SIGN_AUTH_TYPE_PIN, then call getPINResult(). getPINResult() returns PAEW_RET_SUCCESS or PAEW_RET_DEV_OP_CANCEL, indicates user choosesOK or Cancel on UI.If returns PAEW_RET_SUCCESS, signature will go on; if returns PAEW_RET_DEV_OP_CANCEL, you should call abort() to end this sign procedure.
- *    4) If getAuthType() returns PAEW_SIGN_AUTH_TYPE_PIN, and getPINResult() returns PAEW_RET_SUCCESS, then call getPIN() to get PIN from UI.
- *    5) Do signature according to user's option.
- *
- *    pseudo-code of signature method:
- *    if (MiddlewareInterface.PAEW_RET_SUCCESS != getAuthResult()) {
- *        return;
- *    }
- *    nAuthType = getAuthType();
- *    if (Middleware.PAEW_SIGN_AUTH_TYPE_PIN == nAuthType) {
- *        if (MiddlewareInterface.PAEW_RET_SUCCESS != getPINResult()) {
- *            return;
- *        }
- *        strPIN = getPIN();
- *    }
- *    nResult = (do signature with user selected authenticate type (finger print or PIN))
- *    if ((MiddlewareInterface.PAEW_RET_SUCCESS != nResult) && (Middleware.PAEW_SIGN_AUTH_TYPE_PIN != nAuthType)) {
- *        if (MiddlewareInterface.PAEW_RET_SUCCESS != getPINResult()) {
- *            return;
- *        }
- *        strPIN = getPIN();
- *        (do signature with PIN authority)
- *    }
- */
 package com.extropies.testapp;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.Dialog;
+import android.app.DialogFragment;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
-import android.os.Handler;
-import android.os.Message;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.Editable;
+import android.util.DisplayMetrics;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.EditText;
@@ -92,26 +30,37 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.extropies.bluetoothlib.BlueToothUtility;
+import com.extropies.common.CommonUtility;
 import com.extropies.common.MiddlewareInterface;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.util.ArrayList;
+
+import io.reactivex.Observable;
+import io.reactivex.ObservableEmitter;
+import io.reactivex.ObservableOnSubscribe;
+import io.reactivex.Observer;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.schedulers.Schedulers;
 
 public class MainActivity extends AppCompatActivity {
     public static final int TOOL_TYPE_DEMO = 0;
     public static final int TOOL_TYPE_PRODUCT_TEST = 1;
-    public static final int TOOL_TYPE_CURRENT = TOOL_TYPE_DEMO;
+    public static final int TOOL_TYPE_IO_TEST = 2;
+    public static final int TOOL_TYPE_CURRENT = TOOL_TYPE_DEMO/*TOOL_TYPE_PRODUCT_TEST*/;
 
     private Button m_btnEnum;
     private EditText m_editFilter;
     private ProgressBar m_progBar;
 
-    private Thread m_scanThread;
-    private Thread m_testThread;
-    private MainHandler m_mainHandler;
+    private static boolean m_bEnumStarted;
+    private static boolean m_bConnectStarted;
 
     private DevListAdapter m_devListAdapter;
     private ArrayList<String> m_devNameList;
@@ -123,18 +72,394 @@ public class MainActivity extends AppCompatActivity {
 
     private static final String FILTER_FILE_NAME = "filterString.txt";
 
+    public static class ConnectTestDialog extends DialogFragment {
+        private EditText m_editResult = null;
+        private EditText m_editLog = null;
+        private Button m_btnCancel = null;
+
+        private static String m_strDeviceName;
+        private static String m_devHandle;
+        private static int m_logIndex;
+        private static byte m_channelID;
+
+        private static int m_totalLoopTime;
+        private static int m_curLoopTime;
+        private static int m_errorCount;
+
+        private static boolean m_bCancelTest;
+        private static ConnectTestDialog m_curDlg;
+
+        private static final int ENUM_TIME = 20000;
+        private static final int DISCONNECT_FINAL_TIME = 3000;
+
+        class CommonResponse {
+            private int m_returnValue;
+            CommonResponse(int returnValue) {
+                m_returnValue = returnValue;
+            }
+            int getM_returnValue() {
+                return m_returnValue;
+            }
+        }
+        class CommonObserver implements Observer<CommonResponse> {
+            private String m_strProcName;
+            CommonResponse m_response;
+
+            CommonObserver(String strProcName) {
+                m_strProcName = strProcName;
+                m_response = null;
+            }
+
+            @Override
+            public void onSubscribe(Disposable d) {
+                //show start
+                Editable resEdit = m_editLog.getText();
+                m_logIndex = (m_logIndex + 1) % 1000000;
+                resEdit.append("\n=====================");
+                resEdit.append("\n");
+                resEdit.append("[" + m_logIndex + "]");
+                resEdit.append(m_strProcName + " Start");
+            }
+
+            @Override
+            public void onNext(CommonResponse commonResponse) {
+                //show update
+                m_response = commonResponse;
+
+                Editable resEdit = m_editLog.getText();
+                m_logIndex = (m_logIndex + 1) % 1000000;
+                resEdit.append("\n");
+                resEdit.append("[" + m_logIndex + "]");
+                resEdit.append(BlueToothUtility.getErrorString(m_response.getM_returnValue()));
+            }
+
+            @Override
+            public void onError(Throwable e) {
+                Editable resEdit = m_editLog.getText();
+                m_logIndex = (m_logIndex + 1) % 1000000;
+                resEdit.append("\n");
+                resEdit.append("[" + m_logIndex + "]");
+                resEdit.append("Return Value: " + BlueToothUtility.getErrorString(m_response.getM_returnValue()));
+
+                m_curLoopTime++;
+                m_errorCount++;
+                showResultInfo();
+            }
+
+            @Override
+            public void onComplete() {
+                //show final
+                Editable resEdit = m_editLog.getText();
+                m_logIndex = (m_logIndex + 1) % 1000000;
+                resEdit.append("\n");
+                resEdit.append("[" + m_logIndex + "]");
+                resEdit.append("Return Value: " + BlueToothUtility.getErrorString(m_response.getM_returnValue()));
+            }
+        }
+
+        private Observable<CommonResponse> m_getDeviceListObe = Observable.create(new ObservableOnSubscribe<CommonResponse>() {
+            @Override
+            public void subscribe(final ObservableEmitter<CommonResponse> emitter) throws Exception {
+                BlueToothUtility.getInstance().initUtility(getContext());
+                BlueToothUtility.getInstance().setScanTimeout(ENUM_TIME);
+                int iRtn = BlueToothUtility.getInstance().enumDevice(m_strDeviceName, new CommonUtility.enumCallback() {
+                    @Override
+                    public void discoverDevice(String[] strDeviceNames) {
+                        for (String strDeviceName: strDeviceNames) {
+                            if (strDeviceName.equals(m_strDeviceName)) {
+                                emitter.onNext(new CommonResponse(BlueToothUtility.BT_RET_SUCCESS));
+                            }
+                        }
+                    }
+                });
+
+                emitter.onNext(new CommonResponse(iRtn));
+                if (iRtn == BlueToothUtility.BT_RET_SUCCESS) {
+                    emitter.onComplete();
+                } else {
+                    emitter.onError(new Exception());
+                }
+            }
+        }).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread(), true);
+        private CommonObserver m_getDeviceListOb = new CommonObserver("Enum Device") {
+            @Override
+            public void onError(Throwable e) {
+                super.onError(e);
+                m_devHandle = "";
+
+                showResultInfo();
+
+                if (m_bCancelTest) {
+                    m_bConnectStarted = false;
+                    m_curDlg.dismiss();
+                } else {
+                    m_connectObe.subscribe(m_connectOb);
+                }
+            }
+
+            @Override
+            public void onComplete() {
+                super.onComplete();
+                m_devHandle = "";
+
+                showResultInfo();
+
+                if (m_bCancelTest) {
+                    m_bConnectStarted = false;
+                    m_curDlg.dismiss();
+                } else {
+                    m_connectObe.subscribe(m_connectOb);
+                }
+            }
+        };
+
+        class ConnectResponse extends CommonResponse{
+            private String m_devHandle;
+            ConnectResponse(String devHandle, int returnValue) {
+                super(returnValue);
+                m_devHandle = devHandle;
+            }
+            String getM_devHandle() {
+                return m_devHandle;
+            }
+        }
+
+        private Observable<ConnectResponse> m_connectObe = Observable.create(new ObservableOnSubscribe<ConnectResponse>() {
+            @Override
+            public void subscribe(ObservableEmitter<ConnectResponse> emitter) throws Exception {
+                int iRtn = BlueToothUtility.getInstance().connectDevice(m_strDeviceName, new CommonUtility.heartBeatCallback() {
+                    @Override
+                    public void pushHeartBeatData(byte[] heartBeatData) {
+                    }
+                    @Override
+                    public void pushConnectState(boolean connected) {
+                    }
+                });
+                emitter.onNext(new ConnectResponse(m_strDeviceName, iRtn));
+                if (iRtn == BlueToothUtility.BT_RET_SUCCESS) {
+                    m_channelID = (byte)0xD0;
+                    emitter.onComplete();
+                } else {
+                    emitter.onError(new Exception());
+                }
+            }
+        }).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread(), true);
+        private CommonObserver m_connectOb = new CommonObserver("Connect Device") {
+            @Override
+            public void onComplete() {
+                m_devHandle = ((ConnectResponse)m_response).getM_devHandle();
+
+                //start test
+                m_testDeviceObe.subscribe(m_testDeviceOb);
+            }
+        };
+
+        class ReceiveResponse extends CommonResponse {
+            private byte[] m_cmdResp;
+            ReceiveResponse(byte[] cmdResp, int returnValue) {
+                super(returnValue);
+                m_cmdResp = cmdResp;
+            }
+            byte[] getM_cmdResp() {
+                return m_cmdResp;
+            }
+        }
+        private Observable<ReceiveResponse> m_testDeviceObe = Observable.create(new ObservableOnSubscribe<ReceiveResponse>() {
+            @Override
+            public void subscribe(ObservableEmitter<ReceiveResponse> emitter) throws Exception {
+                byte[] cmd_resp = null;
+                //test
+                byte[] cmd_getdevinfo = {(byte)0x80, (byte)0x64, (byte)0x00, (byte)0x00, (byte)0x00};
+                int iRtn = BlueToothUtility.getInstance().sendAndRecvCommand(m_devHandle, cmd_getdevinfo, m_channelID);
+                if (iRtn == BlueToothUtility.BT_RET_SUCCESS) {
+                    do {
+                        cmd_resp = BlueToothUtility.getInstance().getRecvData(m_devHandle);
+                        if (cmd_resp == null) {
+                            iRtn = BlueToothUtility.BT_RET_RECV_CMD_DATA_INVALID;
+                            break;
+                        }
+                        if ((cmd_resp.length == 1) && (cmd_resp[0] == (byte)0xF3)) {
+                            continue;
+                        }
+                        if (cmd_resp.length != 43) {
+                            iRtn = BlueToothUtility.BT_RET_RECV_CMD_DATA_INVALID;
+                            break;
+                        }
+                        break;
+                    } while(true);
+                }
+                emitter.onNext(new ReceiveResponse(cmd_resp, iRtn));
+                if (iRtn != BlueToothUtility.BT_RET_SUCCESS) {
+                    emitter.onError(new Exception());
+                } else {
+                    emitter.onComplete();
+                }
+            }
+        }).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread(), true);
+        private CommonObserver m_testDeviceOb = new CommonObserver("Get Device Info") {
+            @Override
+            public void onError(Throwable e) {
+                super.onError(e);
+                //start disconnect (observable)
+                m_disconnectObe.subscribe(m_disconnectOb);
+            }
+
+            @Override
+            public void onComplete() {
+                super.onComplete();
+                //start disconnect (observable)
+                m_disconnectObe.subscribe(m_disconnectOb);
+
+                m_curLoopTime++;
+                showResultInfo();
+            }
+        };
+
+        void showResultInfo() {
+            m_editResult.setText("Progress: " + m_curLoopTime + "/" + m_totalLoopTime + " , Errors: " + m_errorCount);
+        }
+
+        private Observable<CommonResponse> m_disconnectObe = Observable.create(new ObservableOnSubscribe<CommonResponse>() {
+            @Override
+            public void subscribe(ObservableEmitter<CommonResponse> emitter) throws Exception {
+                int iRtn = BlueToothUtility.getInstance().disconnectDevice(m_devHandle);
+                emitter.onNext(new CommonResponse(iRtn));
+                if (iRtn != BlueToothUtility.BT_RET_SUCCESS) {
+                    emitter.onError(new Exception());
+                } else {
+                    Thread.sleep(DISCONNECT_FINAL_TIME);
+                    emitter.onComplete();
+                }
+            }
+        }).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread(), true);
+        private CommonObserver m_disconnectOb = new CommonObserver("Disconnect Device") {
+            @Override
+            public void onError(Throwable e) {
+                super.onError(e);
+                m_devHandle = "";
+
+                showResultInfo();
+
+                if (m_bCancelTest) {
+                    m_bConnectStarted = false;
+                    m_curDlg.dismiss();
+                } else {
+                    if (m_curLoopTime < m_totalLoopTime) {
+                        m_getDeviceListObe.subscribe(m_getDeviceListOb);
+                    } else {
+                        m_bConnectStarted = false;
+                    }
+                }
+            }
+
+            @Override
+            public void onComplete() {
+                super.onComplete();
+                m_devHandle = "";
+
+                showResultInfo();
+
+                if (m_bCancelTest) {
+                    m_bConnectStarted = false;
+                    m_curDlg.dismiss();
+                } else {
+                    if (m_curLoopTime < m_totalLoopTime) {
+                        m_getDeviceListObe.subscribe(m_getDeviceListOb);
+                    } else {
+                        m_bConnectStarted = false;
+                    }
+                }
+            }
+        };
+
+        public ConnectTestDialog() {
+            m_strDeviceName = "";
+            m_devHandle = "";
+        }
+
+        @Override
+        public void setArguments(Bundle args) {
+            super.setArguments(args);
+
+            m_strDeviceName = args.getString("deviceName");
+        }
+
+        @Override
+        public void onCreate(Bundle savedInstanceState) {
+            m_logIndex = 0;
+            m_totalLoopTime = 100;
+            m_curLoopTime = 0;
+            m_errorCount = 0;
+            m_bCancelTest = false;
+            m_curDlg = this;
+
+            super.onCreate(savedInstanceState);
+        }
+
+        @Nullable
+        @Override
+        public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
+            Dialog dlg = getDialog();
+            if (dlg != null) {
+                dlg.requestWindowFeature(Window.FEATURE_NO_TITLE);
+
+                DisplayMetrics dm = new DisplayMetrics();
+                getActivity().getWindowManager().getDefaultDisplay().getMetrics(dm);
+                WindowManager.LayoutParams attributes = dlg.getWindow().getAttributes();
+                attributes.gravity = Gravity.TOP;//对齐方式
+                attributes.y = 100;
+                dlg.getWindow().setAttributes(attributes);
+                dlg.getWindow().setLayout((int) (dm.widthPixels * 0.9), ViewGroup.LayoutParams.WRAP_CONTENT);
+            }
+
+
+            getDialog().getWindow().setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+
+            View view = inflater.inflate(R.layout.dlg_io_test, container);
+
+            m_editResult = view.findViewById(R.id.edit_result);
+
+            m_editLog = view.findViewById(R.id.edit_log);
+
+            m_btnCancel = view.findViewById(R.id.btn_cancel);
+            m_btnCancel.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if (m_bConnectStarted) {
+                        m_bCancelTest = true;
+                    } else {
+                        m_curDlg.dismiss();
+                    }
+                }
+            });
+
+            return view;
+        }
+
+        @Override
+        public void onStart() {
+            super.onStart();
+
+            this.getDialog().setCancelable(false);
+            this.getDialog().setCanceledOnTouchOutside(false);
+
+            if (!m_bConnectStarted ) {
+                m_bConnectStarted = true;
+                showResultInfo();
+                m_getDeviceListObe.subscribe(m_getDeviceListOb);
+            }
+        }
+    }
+
     class DevListAdapter extends BaseAdapter {
         private ArrayList<String> m_devNameList;
         private int m_itemResId;
         private Context m_context;
-        private Thread m_testThread;
-        private MainHandler m_mainHandler;
 
-        DevListAdapter(Context context, int itemResId, ArrayList<String> devNameList, MainHandler mainHandler) {
+        DevListAdapter(Context context, int itemResId, ArrayList<String> devNameList) {
             m_context = context;
             m_itemResId = itemResId;
             m_devNameList = devNameList;
-            m_mainHandler = mainHandler;
         }
 
         @NonNull
@@ -163,33 +488,127 @@ public class MainActivity extends AppCompatActivity {
             final TextView devText = destView.findViewById(R.id.text_devlist);
             devText.setText(strDeviceName);
 
-            View.OnClickListener clickListener = new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    if ((m_testThread == null) || (m_testThread.getState() == Thread.State.TERMINATED))
-                    {
-                        //connect device
-                        m_devListProgBar = progBar;
-                        m_devListImage = imgView;
-                        m_devListCurrentDevName = strDeviceName;
+            View.OnClickListener clickListener = null;
 
-                        if (TOOL_TYPE_CURRENT == TOOL_TYPE_DEMO) {
-                            m_editFilter.setText(strDeviceName);
-                            ((MainActivity)m_context).setFilterString(strDeviceName);
+            if (TOOL_TYPE_CURRENT == TOOL_TYPE_IO_TEST) {
+                clickListener = new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        if (!m_bConnectStarted && !m_bEnumStarted) {
+                            ConnectTestDialog dlg = new ConnectTestDialog();
+                            Bundle args = new Bundle();
+                            args.putString("deviceName", strDeviceName);
+                            dlg.setArguments(args);
+                            dlg.show(getFragmentManager(), "");
+                        } else {
+                            Toast toast = Toast.makeText(m_context, "Test Still Running", Toast.LENGTH_SHORT);
+                            toast.setGravity(Gravity.CENTER, 0, 0);
+                            toast.show();
+                        }
+                    }
+                };
+            } else {
+                clickListener = new View.OnClickListener() {
+                    class ConnectResponse {
+                        private long m_devHandle;
+                        private int m_returnValue;
+                        ConnectResponse(long devHandle, int returnValue) {
+                            m_devHandle = devHandle;
+                            m_returnValue = returnValue;
+                        }
+                        long getM_devHandle() {
+                            return m_devHandle;
+                        }
+                        int getM_returnValue() {
+                            return m_returnValue;
+                        }
+                    }
+
+                    Observable<ConnectResponse> m_connectObe = Observable.create(new ObservableOnSubscribe<ConnectResponse>() {
+                        @Override
+                        public void subscribe(ObservableEmitter<ConnectResponse> emitter) throws Exception {
+                            long[] contextHandles = new long[1];
+                            int iRtn = MiddlewareInterface.initContextWithDevName(getApplicationContext(), m_devListCurrentDevName, new CommonUtility.heartBeatCallback() {
+                                @Override
+                                public void pushHeartBeatData(byte[] heartBeatData) {
+
+                                }
+
+                                @Override
+                                public void pushConnectState(boolean connected) {
+
+                                }
+                            }, contextHandles);
+                            emitter.onNext(new ConnectResponse(contextHandles[0], iRtn));
+                            emitter.onComplete();
+                        }
+                    }).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread());
+
+                    Observer<ConnectResponse> m_connectOb = new Observer<ConnectResponse>() {
+                        private long m_contextHandle = 0;
+                        private int m_retValue = MiddlewareInterface.PAEW_RET_UNKNOWN_FAIL;
+
+                        @Override
+                        public void onSubscribe(Disposable d) {
+                            if (m_devListProgBar != null) {
+                                m_devListProgBar.setVisibility(View.VISIBLE);
+                            }
+                            if (m_devListImage != null) {
+                                m_devListImage.setVisibility(View.GONE);
+                            }
                         }
 
-                        m_testThread = new BlueToothWrapper(m_mainHandler);
-                        ((BlueToothWrapper)m_testThread).setInitContextWithDevNameWrapper((Activity) m_context, strDeviceName);
-                        m_testThread.start();
+                        @Override
+                        public void onNext(ConnectResponse connectResponse) {
+                            if (connectResponse != null) {
+                                m_retValue = connectResponse.getM_returnValue();
+                                m_contextHandle = connectResponse.getM_devHandle();
+                            }
+                        }
+
+                        @Override
+                        public void onError(Throwable e) {
+                        }
+
+                        @Override
+                        public void onComplete() {
+                            if (m_devListProgBar != null) {
+                                m_devListProgBar.setVisibility(View.GONE);
+                                m_devListProgBar = null;
+                            }
+                            if (m_devListImage != null) {
+                                m_devListImage.setVisibility(View.VISIBLE);
+                                m_devListImage = null;
+                            }
+                            m_bConnectStarted = false;
+
+                            if (m_retValue == MiddlewareInterface.PAEW_RET_SUCCESS) {
+                                Intent intent = new Intent(MainActivity.this, DevTestActivity.class);
+                                intent.putExtra("contextHandle", m_contextHandle);
+                                intent.putExtra("devIndex", 0);
+                                startActivityForResult(intent, DEV_TSET_ACTIVITY);
+                            }
+                        }
+                    };
+
+                    @Override
+                    public void onClick(View v) {
+                        if (!m_bConnectStarted) {
+                            m_bConnectStarted = true;
+
+                            m_devListProgBar = progBar;
+                            m_devListImage = imgView;
+                            m_devListCurrentDevName = strDeviceName;
+
+                            m_connectObe.subscribe(m_connectOb);
+                        } else {
+                            Toast toast = Toast.makeText(m_context, "Test Still Running", Toast.LENGTH_SHORT);
+                            toast.setGravity(Gravity.CENTER, 0, 0);
+                            toast.show();
+                        }
                     }
-                    else
-                    {
-                        Toast toast = Toast.makeText(m_context, "Test Still Running", Toast.LENGTH_SHORT);
-                        toast.setGravity(Gravity.CENTER, 0, 0);
-                        toast.show();
-                    }
-                }
-            };
+                };
+            }
 
             destView.setOnClickListener(clickListener);
 
@@ -218,103 +637,179 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    class MainHandler extends Handler {
-        @Override
-        public void handleMessage(Message msg) {
-            switch(msg.what) {
-                case BlueToothWrapper.MSG_ENUM_START:
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        final Intent recvData = data;
+        if (requestCode == DEV_TSET_ACTIVITY) {
+            if (data != null) {
+                m_bConnectStarted = true;
+                Observable.create(new ObservableOnSubscribe<Integer>() {
+                    @Override
+                    public void subscribe(ObservableEmitter<Integer> emitter) throws Exception {
+                        long contextHandle = recvData.getLongExtra("contextHandle", 0);
+                        MiddlewareInterface.freeContext(contextHandle);
+                        try {
+                            Thread.sleep(3000);
+                        } catch(Exception e) {
+                            e.printStackTrace();
+                        }
+                        emitter.onComplete();
+                    }
+                }).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread()).subscribe(new Observer<Integer>() {
+                    @Override
+                    public void onSubscribe(Disposable d) {
+
+                    }
+
+                    @Override
+                    public void onNext(Integer integer) {
+
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+
+                    }
+
+                    @Override
+                    public void onComplete() {
+                        m_bConnectStarted = false;
+                    }
+                });
+            }
+
+            m_devListCurrentDevName = null;
+        }
+    }
+
+    void initListeners() {
+        m_btnEnum.setOnClickListener(new View.OnClickListener() {
+            Observable<String[]> m_getDeviceListObe = Observable.create(new ObservableOnSubscribe<String[]>() {
+                @Override
+                public void subscribe(final ObservableEmitter<String[]> emitter) throws Exception {
+                    int[] devCount = new int[1];
+                    devCount[0] = MiddlewareInterface.PAEW_MAX_DEV_COUNT;
+                    String[] strDeviceNames = new String[MiddlewareInterface.PAEW_MAX_DEV_COUNT];
+                    MiddlewareInterface.getDeviceList(getApplicationContext(), m_editFilter.getText().toString(), 20000, new CommonUtility.enumCallback() {
+                        @Override
+                        public void discoverDevice(String[] strDeviceNames) {
+                            emitter.onNext(strDeviceNames);
+                        }
+                    }, strDeviceNames, devCount);
+
+                    emitter.onComplete();
+                }
+            }).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread());
+
+            Observer<String[]> m_getDeviceListOb = new Observer<String[]>() {
+                @Override
+                public void onSubscribe(Disposable d) {
                     //clear device list
                     m_devNameList.clear();
                     m_devListAdapter.notifyDataSetChanged();
                     //disable button
                     m_btnEnum.setEnabled(false);
                     m_progBar.setVisibility(View.VISIBLE);
-                    break;
-                case BlueToothWrapper.MSG_ENUM_UPDATE:
-                    //add device list
-                    String[] devNames = (String[])msg.obj;
-                    if (devNames != null) {
-                        for(int i = 0; i < devNames.length; i++) {
-                            m_devNameList.add(devNames[i]);
+                    //set filter
+                    setFilterString(m_editFilter.getText().toString());
+                }
+
+                @Override
+                public void onNext(String[] strings) {
+                    if (strings != null) {
+                        for(int i = 0; i < strings.length; i++) {
+                            m_devNameList.add(strings[i]);
                         }
                         m_devListAdapter.notifyDataSetChanged();
                     }
-                    break;
-                case BlueToothWrapper.MSG_ENUM_FINISH:
+                }
+
+                @Override
+                public void onError(Throwable e) {
+                }
+
+                @Override
+                public void onComplete() {
                     m_btnEnum.setEnabled(true);
                     m_progBar.setVisibility(View.GONE);
-                    break;
-                case BlueToothWrapper.MSG_INIT_CONTEXT_START:
-                    if (m_devListProgBar != null) {
-                        m_devListProgBar.setVisibility(View.VISIBLE);
-                    }
-                    if (m_devListImage != null) {
-                        m_devListImage.setVisibility(View.GONE);
-                    }
-                    break;
-                case BlueToothWrapper.MSG_INIT_CONTEXT_FINISH:
-                    if (m_devListProgBar != null) {
-                        m_devListProgBar.setVisibility(View.GONE);
-                        m_devListProgBar = null;
-                    }
-                    if (m_devListImage != null) {
-                        m_devListImage.setVisibility(View.VISIBLE);
-                        m_devListImage = null;
-                    }
-                    m_devListCurrentDevName = null;
-                    BlueToothWrapper.InitContextReturnValue returnValue = (BlueToothWrapper.InitContextReturnValue)msg.obj;
-                    if ((returnValue != null) && (returnValue.getReturnValue() == MiddlewareInterface.PAEW_RET_SUCCESS)) {
-                        //if device connect success, then move to next activity
-                        Intent intent = new Intent(MainActivity.this, DevTestActivity.class);
-                        intent.putExtra("contextHandle", returnValue.getContextHandle());
-                        intent.putExtra("devIndex", 0);
-                        startActivityForResult(intent, DEV_TSET_ACTIVITY);
-                    }
-                    break;
-            }
-        }
-    }
-
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        long contextHandle;
-
-        if (requestCode == DEV_TSET_ACTIVITY) {
-            if (data != null) {
-                contextHandle = data.getLongExtra("contextHandle", 0);
-                if (contextHandle != 0) {
-                    if ((m_testThread == null) || (m_testThread.getState() == Thread.State.TERMINATED))
-                    {
-                        m_testThread = new BlueToothWrapper(m_mainHandler);
-                        ((BlueToothWrapper)m_testThread).setFreeContextWrapper(contextHandle);
-                        m_testThread.start();
-                    }
-                    else
-                    {
-                        Toast toast = Toast.makeText(getApplicationContext(), "Test Still Running", Toast.LENGTH_SHORT);
-                        toast.setGravity(Gravity.CENTER, 0, 0);
-                        toast.show();
-                    }
+                    m_bEnumStarted = false;
                 }
-            }
-        }
-    }
+            };
 
-    void initListeners() {
-        m_btnEnum.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                setFilterString(m_editFilter.getText().toString());
-
-                if ((m_scanThread == null) || (m_scanThread.getState() == Thread.State.TERMINATED))
-                {
-                    //enumerate devices
-                    m_scanThread = new BlueToothWrapper(m_mainHandler);
-                    ((BlueToothWrapper)m_scanThread).setGetDevListWrapper(/*MainActivity.this*/getApplicationContext(), m_editFilter.getText().toString());
-                    m_scanThread.start();
+                if (!m_bEnumStarted) {
+                    //set enum start
+                    m_bEnumStarted = true;
+                    m_getDeviceListObe.subscribe(m_getDeviceListOb);
+                } else {
+                    Toast toast = Toast.makeText(getApplicationContext(), "Test Still Running", Toast.LENGTH_SHORT);
+                    toast.setGravity(Gravity.CENTER, 0, 0);
+                    toast.show();
                 }
-                else
-                {
+            }
+        });
+    }
+
+    void initListenersForIoTest() {
+        m_btnEnum.setOnClickListener(new View.OnClickListener() {
+            Observable<String[]> m_getDeviceListObe = Observable.create(new ObservableOnSubscribe<String[]>() {
+                @Override
+                public void subscribe(final ObservableEmitter<String[]> emitter) throws Exception {
+                    BlueToothUtility.getInstance().initUtility(getApplicationContext());
+                    BlueToothUtility.getInstance().enumDevice(m_editFilter.getText().toString(), new CommonUtility.enumCallback() {
+                        @Override
+                        public void discoverDevice(String[] strDeviceNames) {
+                            emitter.onNext(strDeviceNames);
+                        }
+                    });
+
+                    emitter.onComplete();
+                }
+            }).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread());
+
+            Observer<String[]> m_getDeviceListOb = new Observer<String[]>() {
+                @Override
+                public void onSubscribe(Disposable d) {
+                    //clear device list
+                    m_devNameList.clear();
+                    m_devListAdapter.notifyDataSetChanged();
+                    //disable button
+                    m_btnEnum.setEnabled(false);
+                    m_progBar.setVisibility(View.VISIBLE);
+                    //set filter
+                    setFilterString(m_editFilter.getText().toString());
+                }
+
+                @Override
+                public void onNext(String[] strings) {
+                    if (strings != null) {
+                        for(int i = 0; i < strings.length; i++) {
+                            m_devNameList.add(strings[i]);
+                        }
+                        m_devListAdapter.notifyDataSetChanged();
+                    }
+                }
+
+                @Override
+                public void onError(Throwable e) {
+                }
+
+                @Override
+                public void onComplete() {
+                    m_btnEnum.setEnabled(true);
+                    m_progBar.setVisibility(View.GONE);
+                    m_bEnumStarted = false;
+                }
+            };
+
+            @Override
+            public void onClick(View v) {
+                if (!m_bEnumStarted) {
+                    //set enum start
+                    m_bEnumStarted = true;
+                    m_getDeviceListObe.subscribe(m_getDeviceListOb);
+                } else {
                     Toast toast = Toast.makeText(getApplicationContext(), "Test Still Running", Toast.LENGTH_SHORT);
                     toast.setGravity(Gravity.CENTER, 0, 0);
                     toast.show();
@@ -330,7 +825,7 @@ public class MainActivity extends AppCompatActivity {
         if (filterFile.exists()) {
             try{
                 byte[] bufferData = new byte[1024];
-                int dataLen = 0;// 一次读取1024字节大小，没有数据后返回-1.
+                int dataLen;// 一次读取1024字节大小，没有数据后返回-1.
 
                 FileInputStream fis = new FileInputStream(filterFile);
                 ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -350,13 +845,15 @@ public class MainActivity extends AppCompatActivity {
         return strFilter;
     }
 
-    private int setFilterString(String strFilter) {
+    private void setFilterString(String strFilter) {
         try {
             String strFilterFileName = this.getFilesDir().getAbsolutePath() + FILTER_FILE_NAME;
             File filterFile = new File(strFilterFileName);
 
             if (!filterFile.exists()) {
-                filterFile.createNewFile();
+                if (!filterFile.createNewFile()) {
+                    throw new FileNotFoundException();
+                }
             }
 
             FileOutputStream outStream = new FileOutputStream(filterFile);
@@ -365,15 +862,13 @@ public class MainActivity extends AppCompatActivity {
         } catch (Exception e) {
             e.printStackTrace();
         }
-
-        return 0;
     }
 
     //request
     public static int BLUETOOTH_PERMISSIONS_REQUEST = 0;
-    private static boolean requestPermissions(Activity activity) {
+    private static void requestPermissions(Activity activity) {
         if (activity == null) {
-            return false;
+            return;
         }
 
         if (Build.VERSION.SDK_INT >= 23) {
@@ -392,8 +887,6 @@ public class MainActivity extends AppCompatActivity {
         if (ActivityCompat.checkSelfPermission(activity, Manifest.permission.BLUETOOTH_ADMIN) !=  PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(activity, new String[]{Manifest.permission.BLUETOOTH_ADMIN}, BLUETOOTH_PERMISSIONS_REQUEST);
         }
-
-        return true;
     }
 
     @Override
@@ -404,34 +897,33 @@ public class MainActivity extends AppCompatActivity {
         //request permissions
         requestPermissions(this);
 
-        m_mainHandler = new MainHandler();
-
         m_btnEnum = findViewById(R.id.btn_start_scan);
         m_editFilter = findViewById(R.id.text_filter);
         m_progBar = findViewById(R.id.enum_prog);
+        m_bEnumStarted = false;
+        m_bConnectStarted = false;
         m_devListProgBar = null;
         m_devListImage = null;
 
         m_progBar.setVisibility(View.GONE);
 
         if (MainActivity.TOOL_TYPE_CURRENT == MainActivity.TOOL_TYPE_PRODUCT_TEST) {
-            if (getFilterString() == "") {
+            if (getFilterString().equals("")) {
                 setFilterString("WOOKONG BIO");
             }
         }
         m_editFilter.getText().append(getFilterString());
 
         m_devNameList = new ArrayList<>(0);
-        m_devListAdapter = new DevListAdapter(this, R.layout.devlist_btn_item, m_devNameList, m_mainHandler);
+        m_devListAdapter = new DevListAdapter(this, R.layout.devlist_btn_item, m_devNameList);
         ListView devListView = findViewById(R.id.list_devname);
         if (devListView != null) {
             devListView.setAdapter(m_devListAdapter);
         }
-
-        m_scanThread = null;
-
-        initListeners();
-
-        return;
+        if (TOOL_TYPE_CURRENT == TOOL_TYPE_IO_TEST) {
+            initListenersForIoTest();
+        } else {
+            initListeners();
+        }
     }
 }

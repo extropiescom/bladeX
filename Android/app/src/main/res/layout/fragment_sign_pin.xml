@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="horizontal" android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <EditText
+        android:id="@+id/edit_pin"
+        android:layout_width="0dp"
+        android:layout_weight="1"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="15sp"
+        android:layout_marginEnd="15sp"
+        android:inputType="textPassword"
+        android:hint="@string/edit_pin"
+        android:maxLength="16"/>
+    <ProgressBar
+        android:id="@+id/wait_sign_prog"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"/>
+    <Button
+        android:id="@+id/btn_login"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/btn_login"
+        android:textAllCaps="false"
+        android:layout_marginEnd="15sp"/>
+
+</LinearLayout>

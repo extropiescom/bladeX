@@ -15,7 +15,7 @@
     <string name="cmd_verify_btn">Verify</string>
     <string name="cmd_delete_btn">Delete</string>
     <string name="cmd_calib_btn">Calibration</string>
-    <string name="cmd_abort_btn">Abort</string>
+    <string name="cmd_abort_btn">AbortFP</string>
     <string name="test_jni_btn">testJNI(Enum)</string>
     <string name="test_connect_btn">testJNI(Open)</string>
     <string name="btn_getdevinfo">GetDevInfo</string>
@@ -44,7 +44,7 @@
     <string name="edit_sn">Please input Serial Number</string>
     <string name="test_hid_btn">TestHid</string>
     <string name="btn_start_scan">Scan Device</string>
-    <string name="edit_pin">Please input new PIN</string>
+    <string name="edit_pin">Please input PIN</string>
     <string name="edit_new_pin">Please input new PIN</string>
     <string name="tab_item_device">Device</string>
     <string name="tab_item_fp">FPrint</string>
@@ -56,10 +56,10 @@
     <string name="btn_seed2addr">RecoverAddr</string>
     <string name="edit_mnes">Please input mnemonics</string>
     <string name="edit_seed">Please input seed</string>
-    <string name="btn_import_image">Import Img</string>
-    <string name="btn_clear_image">Clear Img</string>
-    <string name="btn_show_image">Show Img</string>
-    <string name="btn_show_image0">Show Img0</string>
+    <string name="btn_import_image">ImportImg</string>
+    <string name="btn_clear_image">ClearImg</string>
+    <string name="btn_show_image">ShowImg</string>
+    <string name="btn_show_image0">ShowImg0</string>
     <string name="btn_set_logo">SetLogo</string>
     <string name="btn_restore_logo">ResetLogo</string>
     <string name="btn_set_image_name">SetIName</string>
@@ -74,4 +74,18 @@
     <string name="btn_test_freeContextAndShutDown">断开设备</string>
     <string name="btn_update_cos">UpdateCOS</string>
     <string name="btn_get_fw_version">GetFWVersion</string>
+    <string name="text_set_tx">Processing transaction data</string>
+    <string name="tab_sign_item_fp">FingerPrint</string>
+    <string name="tab_sign_item_pin">PIN</string>
+    <string name="btn_ok">OK</string>
+    <string name="btn_cancel">Cancel</string>
+    <string name="btn_login">Login</string>
+    <string name="btn_test_abort">中断测试</string>
+    <string name="btn_import_bmp">ImportBMP</string>
+    <string name="btn_abortButton">AbortButton</string>
+    <string name="btn_abortSign">AbortSign</string>
+    <string name="btn_get_battery">GetBattery</string>
+    <string name="btn_erc20sign">ERC20Sign</string>
+    <string name="btn_etcsign">ETCSign</string>
+    <string name="btn_btcsign">BTCSign</string>
 </resources>

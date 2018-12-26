@@ -19,6 +19,13 @@
     </TableRow>
     <TableRow>
         <Button
+            android:id="@+id/btn_abort"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:text="@string/btn_test_abort"
+            android:textAllCaps="false" />
+        <Button
             android:id="@+id/btn_calibrate"
             android:layout_width="0dp"
             android:layout_weight="1"
